@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Playables SDK -->
+<script>// Playables SDK v1.0.0
+// Game lifecycle bridge: rAF-based game-ready detection + event communication
+(function() {
+  'use strict';
+
+  // Idempotency: skip if already initialized (e.g., server-side injection
+  // followed by client-side inject-javascript via the Bloks webview component).
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  // --- Transport Layer ---
+
+  function hasIOSBridge() {
+    return !!(window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] &&
+              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try {
+        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+      } catch (e) { /* ignore */ }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+    try {
+      var p = payload || {};
+      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+      p.timestamp = message.timestamp;
+      window[ANDROID_BRIDGE_NAME].postEvent(
+        eventName,
+        JSON.stringify(p)
+      );
+    } catch (e) { /* ignore */ }
+    return;
+  }
+
+    if (isInIframe()) {
+      try {
+        window.parent.postMessage(message, '*');
+      } catch (e) { /* ignore */ }
+      return;
+    }
+  }
+
+  // --- rAF Game-Ready Detection ---
+
+  function onFrame() {
+    if (gameReadySent) return;
+
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', {
+        frame_count: frameCount,
+        detected_at: Date.now()
+      });
+      return;
+    }
+
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', {
+              frame_count: frameCount,
+              detected_at: Date.now()
+            });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  // --- First User Interaction Detection ---
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  // --- Auto Error Capture ---
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  // --- Public API ---
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', {
+        score: score,
+        completed: true
+      });
+    },
+
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', {
+        message: message || 'Unknown error',
+        auto_captured: false
+      });
+    },
+
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  // Kick off rAF detection in case no game code calls rAF immediately
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();</script>
+<!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
+(function() {
+  if (window.__playableTouchPatchInstalled) return;
+  window.__playableTouchPatchInstalled = true;
+  var origAdd = EventTarget.prototype.addEventListener;
+  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (blockedTypes[type]) {
+      if (options === undefined || options === null) {
+        options = { passive: true };
+      } else if (typeof options === 'boolean') {
+        options = { capture: options, passive: true };
+      } else {
+        options = Object.assign({}, options, { passive: true });
+      }
+    }
+    return origAdd.call(this, type, listener, options);
+  };
+})();
+</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Sheet Manager - Final Working</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{font-family:Inter,sans-serif}
+.screen{display:none}.screen.active{display:block}
+.nav-btn.active{background:#4f46e5;color:white}
+.menu-dropdown{position:absolute;right:0;top:32px;background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.15);min-width:160px;z-index:60;display:none}
+.menu-dropdown.show{display:block}
+.checked-row{filter:blur(0.8px);opacity:.45;background:#f0fdf4 !important}
+.checked-row td{text-decoration:line-through}
+.print-preview{width:300px;background:white;border:1px dashed #aaa;font-family:monospace;font-size:11px;line-height:1.3}
+
+/* ANMOL CHILDRENWEAR Colorful Animation */
+.power-letter{
+  display:inline-block;
+  font-weight:900;
+  animation: powerBounce 1.8s ease-in-out infinite, powerGlow 2s ease-in-out infinite;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+}
+@keyframes powerBounce{
+  0%, 100%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-2px) scale(1.08); }
+}
+@keyframes powerGlow{
+  0%, 100%{ filter: brightness(1) drop-shadow(0 0 2px currentColor); }
+  50%{ filter: brightness(1.4) drop-shadow(0 0 6px currentColor); }
+}
+
+.anmol-letter{
+  display:inline-block;
+  font-weight:900;
+  animation: anmolBounce 2s ease-in-out infinite, anmolColorShift 4s linear infinite;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  transform-origin: bottom;
+}
+@keyframes anmolBounce{
+  0%, 100%{ transform: translateY(0) scale(1); }
+  25%{ transform: translateY(-4px) scale(1.1); }
+  50%{ transform: translateY(0) scale(1); }
+  75%{ transform: translateY(-2px) scale(1.05); }
+}
+@keyframes anmolColorShift{
+  0%{ filter: hue-rotate(0deg) brightness(1); }
+  50%{ filter: hue-rotate(20deg) brightness(1.2); }
+  100%{ filter: hue-rotate(0deg) brightness(1); }
+}
+
+/* Dark Mode Styles - only when .dark-mode active */
+body.dark-mode{ background:#0f172a !important; }
+body.dark-mode #mainHeader{ background:#1e293b !important; border-color:#334155 !important; }
+body.dark-mode #mainHeader h1{ filter: brightness(1.3); }
+body.dark-mode #mainHeader p{ color:#94a3b8 !important; }
+body.dark-mode .bg-white{ background:#1e293b !important; }
+body.dark-mode .bg-\[\#f6f7fb\]{ background:#0f172a !important; }
+body.dark-mode .border{ border-color:#334155 !important; }
+body.dark-mode .text-slate-500{ color:#94a3b8 !important; }
+body.dark-mode .bg-slate-50{ background:#334155 !important; }
+body.dark-mode .bg-slate-100{ background:#334155 !important; color:#e2e8f0 !important; }
+body.dark-mode .bg-yellow-50{ background:#422006 !important; }
+body.dark-mode .bg-emerald-50{ background:#064e3b !important; }
+body.dark-mode .bg-blue-50{ background:#1e3a5f !important; }
+body.dark-mode table thead{ background:#334155 !important; }
+body.dark-mode table td{ color:#e2e8f0; }
+body.dark-mode input, body.dark-mode select{ background:#0f172a !important; color:white !important; border-color:#475569 !important; }
+
+.menu-item{padding:10px 14px; font-size:13px; font-weight:600; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background .15s}
+.menu-item:last-child{border-bottom:none}
+.menu-item:hover{background:#f8fafc}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#f6f7fb] min-h-screen pb-24" onclick="closeAllMenus(event)">
+<div class="max-w-6xl mx-auto p-3 sm:p-6">
+  <div class="bg-white rounded-[16px] shadow-sm p-3 border mb-3 relative flex flex-col items-center justify-center text-center" id="mainHeader" style="background:white;">
+    <!-- Dark Mode + Settings Buttons - Right Side -->
+    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1.5 z-20">
+      <button id="settingBtn" onclick="toggleSettingsMenu(event)" class="w-9 h-9 rounded-full bg-slate-100 border text-slate-700 flex items-center justify-center text-[18px] shadow-md hover:scale-110 transition-transform" title="Settings">⚙️</button>
+      <button id="darkModeBtn" onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-[16px] shadow-md hover:scale-110 transition-transform" title="Dark Mode">🌙</button>
+    </div>
+    
+    <!-- Settings Dropdown Menu -->
+    <div id="settingsDropdown" class="hidden absolute right-2 top-[52px] bg-white border-2 border-slate-200 rounded-[16px] shadow-2xl z-30 w-[200px] overflow-hidden">
+      <div class="p-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-b">
+        <p class="font-black text-[11px] text-indigo-800 text-left">⚙️ SETTINGS MENU</p>
+      </div>
+      <button onclick="handleSettingAction('backup')" class="w-full text-left px-4 py-3 hover:bg-purple-50 flex items-center gap-3 text-sm font-bold border-b"><span class="text-[18px]">💾</span> Backup <span class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full ml-auto">Full App</span></button>
+      <button onclick="handleSettingAction('restore')" class="w-full text-left px-4 py-3 hover:bg-orange-50 flex items-center gap-3 text-sm font-bold border-b"><span class="text-[18px]">♻️</span> Restore <span class="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full ml-auto">JSON</span></button>
+      <button onclick="handleSettingAction('import')" class="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 text-sm font-bold border-b"><span class="text-[18px]">📥</span> Import Excel <span class="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-auto">XLSX</span></button>
+      <button onclick="handleSettingAction('export')" class="w-full text-left px-4 py-3 hover:bg-emerald-50 flex items-center gap-3 text-sm font-bold"><span class="text-[18px]">📤</span> Export Excel <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full ml-auto">XLSX</span></button>
+    </div>
+    
+    <!-- ANMOL CHILDRENWEAR - 1 Line Center -->
+    <h1 class="text-[20px] sm:text-[26px] font-black tracking-wide whitespace-nowrap" style="font-family: 'Inter', sans-serif; line-height:1.2; width:100%; text-align:center; padding-right:90px; padding-left:10px;">
+      <span class="anmol-letter" style="color:#FF1744; animation-delay:0s;">A</span><span class="anmol-letter" style="color:#FF9100; animation-delay:0.08s;">N</span><span class="anmol-letter" style="color:#E91E63; animation-delay:0.16s;">M</span><span class="anmol-letter" style="color:#00E676; animation-delay:0.24s;">O</span><span class="anmol-letter" style="color:#00B0FF; animation-delay:0.32s;">L</span><span style="margin-left:6px;"></span><span class="anmol-letter" style="color:#651FFF; animation-delay:0.4s;">C</span><span class="anmol-letter" style="color:#FF1744; animation-delay:0.48s;">H</span><span class="anmol-letter" style="color:#FF9100; animation-delay:0.56s;">I</span><span class="anmol-letter" style="color:#D500F9; animation-delay:0.64s;">L</span><span class="anmol-letter" style="color:#00E676; animation-delay:0.72s;">D</span><span class="anmol-letter" style="color:#00B0FF; animation-delay:0.8s;">R</span><span class="anmol-letter" style="color:#651FFF; animation-delay:0.88s;">E</span><span class="anmol-letter" style="color:#FF1744; animation-delay:0.96s;">N</span><span class="anmol-letter" style="color:#FF9100; animation-delay:1.04s;">W</span><span class="anmol-letter" style="color:#00E676; animation-delay:1.12s;">E</span><span class="anmol-letter" style="color:#00B0FF; animation-delay:1.2s;">A</span><span class="anmol-letter" style="color:#651FFF; animation-delay:1.28s;">R</span>
+    </h1>
+    
+    <!-- Power by ANISHHUSEN - Colorful Animated -->
+    <p class="text-[12px] sm:text-[13px] font-black tracking-widest mt-1" style="width:100%; text-align:center; padding-right:90px;">
+      <span class="power-letter" style="color:#FF6B6B; animation-delay:0s;">P</span><span class="power-letter" style="color:#FF8E53; animation-delay:0.05s;">o</span><span class="power-letter" style="color:#FE6B8B; animation-delay:0.1s;">w</span><span class="power-letter" style="color:#FF6B6B; animation-delay:0.15s;">e</span><span class="power-letter" style="color:#9C27B0; animation-delay:0.2s;">r</span>
+      <span style="margin-left:4px;"></span>
+      <span class="power-letter" style="color:#3F51B5; animation-delay:0.25s;">b</span><span class="power-letter" style="color:#2196F3; animation-delay:0.3s;">y</span>
+      <span style="margin-left:6px;"></span>
+      <span class="power-letter" style="color:#FF1744; animation-delay:0.35s;">A</span><span class="power-letter" style="color:#FF9100; animation-delay:0.4s;">N</span><span class="power-letter" style="color:#E91E63; animation-delay:0.45s;">I</span><span class="power-letter" style="color:#00E676; animation-delay:0.5s;">S</span><span class="power-letter" style="color:#00B0FF; animation-delay:0.55s;">H</span><span class="power-letter" style="color:#651FFF; animation-delay:0.6s;">H</span><span class="power-letter" style="color:#FF1744; animation-delay:0.65s;">U</span><span class="power-letter" style="color:#FF9100; animation-delay:0.7s;">S</span><span class="power-letter" style="color:#00E676; animation-delay:0.75s;">E</span><span class="power-letter" style="color:#00B0FF; animation-delay:0.8s;">N</span>
+    </p>
+    
+    <!-- Hidden inputs for Import/Restore -->
+    <div id="btStatus" style="display:none;">Not Connected</div>
+    <div id="printerInfo" style="display:none;"></div>
+    <input type="file" id="importFile" accept=".xlsx,.xls,.csv" class="hidden" onchange="importExcel(event)">
+    <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreFullApp(event)">
+  </div>
+
+
+  <div class="bg-white rounded-[12px] border p-2 grid grid-cols-4 gap-1.5 mb-4 sticky top-2 z-20">
+    <button id="navMain" onclick="showScreen('main')" class="nav-btn active py-2.5 rounded-xl font-bold text-[12px]">Main<br><span class="text-[10px]">Sheets</span> <span id="mainCountBadge" class="bg-white/20 px-1.5 rounded-full text-[10px]">0</span></button>
+    <button id="navToday" onclick="showScreen('today')" class="nav-btn py-2.5 rounded-xl font-bold text-[12px] bg-slate-100">Today<br><span class="text-[10px]">Sheets</span> <span id="todayCountBadge" class="bg-amber-500 text-white px-1.5 rounded-full text-[10px]">0</span></button>
+    <button id="navSave" onclick="showScreen('save')" class="nav-btn py-2.5 rounded-xl font-bold text-[12px] bg-slate-100">Save<br><span class="text-[10px]">Sheets</span> <span id="saveCountBadge" class="bg-emerald-500 text-white px-1.5 rounded-full text-[10px]">0</span></button>
+    <button id="navPrint" onclick="showScreen('print')" class="nav-btn py-2.5 rounded-xl font-bold text-[12px] bg-slate-100">Print<br><span class="text-[10px]">Setting</span></button>
+  </div>
+
+  <!-- MAIN -->
+  <div id="screen-main" class="screen active">
+    <div class="bg-white rounded-[16px] border overflow-hidden">
+      <div class="p-4 bg-yellow-50 border-b border-yellow-200">
+        <h3 class="font-bold text-sm mb-2">Add New Item</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2">
+          <div class="flex gap-1 col-span-2 sm:col-span-1">
+            <select id="newCategory" class="flex-1 px-3 py-3 rounded-xl border-2 border-indigo-200 text-sm font-bold bg-white">
+              <option value="">-- Category --</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Sweets">Sweets</option>
+              <option value="Ghee & Oil">Ghee & Oil</option>
+              <option value="Flour">Flour</option>
+              <option value="Spices">Spices</option>
+              <option value="Other">Other</option>
+            </select>
+            <button onclick="deleteSelectedCategory()" class="w-12 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[18px] flex items-center justify-center shadow-sm" title="Delete Category">🗑️</button>
+          </div>
+          <input id="customCategory" placeholder="New Category" class="px-3 py-3 rounded-xl border-2 border-slate-200 text-sm">
+          <input id="newItemName" placeholder="Item Name *" class="px-3 py-3 rounded-xl border-2 border-slate-200 text-sm font-medium">
+          <input id="newItemQty" type="number" placeholder="QTY *" class="px-3 py-3 rounded-xl border-2 border-slate-200 text-sm">
+          <input id="newItemRate" type="number" placeholder="Rate *" class="px-3 py-3 rounded-xl border-2 border-slate-200 text-sm">
+          <button onclick="addNewItem()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-4 py-3 rounded-xl font-bold text-sm col-span-2 sm:col-span-1">+ ADD ITEM</button>
+        </div>
+        <p id="addError" class="text-xs text-red-600 mt-2 hidden"></p>
+      </div>
+      <div id="categoryChips" class="p-2 flex gap-2 flex-wrap border-b bg-white"></div>
+      <div id="mainCategoryGroups"></div>
+      <div id="mainEmpty" class="hidden p-10 text-center text-slate-400 text-sm">No items yet - Add above</div>
+    </div>
+  </div>
+
+  <!-- TODAY -->
+  <div id="screen-today" class="screen">
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <div class="bg-blue-600 rounded-xl p-3 text-white"><p class="text-[10px]">TODAY</p><p class="text-xl font-bold" id="todayItemCount">0</p></div>
+      <div class="bg-emerald-600 rounded-xl p-3 text-white"><p class="text-[10px]">TOTAL</p><p class="text-xl font-bold">₹<span id="todayTotal">0</span></p></div>
+      <div class="bg-amber-600 rounded-xl p-3 text-white"><p class="text-[10px]">PENDING</p><p class="text-xl font-bold" id="pendingCount">0</p></div>
+    </div>
+    <div class="bg-white rounded-[16px] border overflow-hidden">
+      <div class="p-3 flex justify-between items-center border-b bg-emerald-50">
+        <h2 class="font-bold text-sm">Today Sheets</h2>
+        <div class="flex gap-2">
+          <button onclick="saveTodayList()" class="bg-emerald-600 text-white px-4 py-2 rounded-full text-xs font-bold">💾 Save List</button>
+          <button onclick="clearToday()" class="bg-white border px-3 py-2 rounded-full text-xs">Clear</button>
+        </div>
+      </div>
+      <div id="todayCategoryGroups"></div>
+      <div id="todayEmptyState" class="p-10 text-center text-slate-400 text-sm">No items - Go to Main and tap +</div>
+    </div>
+  </div>
+
+  <!-- SAVE -->
+  <div id="screen-save" class="screen">
+    <div class="bg-white rounded-[16px] border overflow-hidden">
+      <div class="p-4 border-b bg-slate-50 flex justify-between"><h2 class="font-bold">Save Sheets - Date Wise</h2><button onclick="clearAllSaved()" class="text-xs bg-white border px-3 py-1.5 rounded-full">Clear All</button></div>
+      <div id="savedListsContainer" class="p-3 space-y-3"></div>
+      <div id="saveEmpty" class="p-12 text-center text-slate-400 text-sm">No saved lists</div>
+    </div>
+  </div>
+
+  <!-- PRINT -->
+  <div id="screen-print" class="screen">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-white rounded-[16px] border p-5">
+        <h2 class="font-bold text-lg mb-4">🖨️ Print Setting - 3 Inch (80mm)</h2>
+        <div class="space-y-3">
+          <div class="p-3 bg-blue-50 rounded-xl border">
+            <h4 class="font-bold text-sm mb-2">Bluetooth Printer</h4>
+            <div class="flex gap-2">
+              <button onclick="connectPrinter()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Scan & Connect</button>
+              <button onclick="testPrint()" class="bg-white border px-4 py-2 rounded-xl text-sm font-bold">Test Print</button>
+            </div>
+            <p id="printerInfo" class="text-[11px] text-slate-500 mt-2">Not connected</p>
+          </div>
+          <div>
+            <label class="text-xs font-bold">PRINT BLOCKS</label>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <label class="flex gap-2 p-2.5 border rounded-xl text-sm"><input type="checkbox" id="printHeader" checked onchange="updatePreview()"> Header</label>
+              <label class="flex gap-2 p-2.5 border rounded-xl text-sm"><input type="checkbox" id="printDate" checked onchange="updatePreview()"> Date</label>
+              <label class="flex gap-2 p-2.5 border rounded-xl text-sm"><input type="checkbox" id="printCategoryBlock" checked onchange="updatePreview()"> Category Blocks</label>
+              <label class="flex gap-2 p-2.5 border rounded-xl text-sm"><input type="checkbox" id="printTotal" checked onchange="updatePreview()"> Total</label>
+              <label class="flex gap-2 p-2.5 border rounded-xl text-sm"><input type="checkbox" id="printFooter" checked onchange="updatePreview()"> Footer</label>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-xs font-bold">Paper</label><select id="paperWidth" class="w-full mt-1 px-3 py-2.5 rounded-xl border text-sm" onchange="updatePreview()"><option value="80">3 Inch (80mm) - 48 chars</option><option value="58">2 Inch (58mm)</option></select></div>
+            <div><label class="text-xs font-bold">Copies</label><input id="copies" type="number" value="1" min="1" max="5" class="w-full mt-1 px-3 py-2.5 rounded-xl border text-sm"></div>
+          </div>
+          <div><label class="text-xs font-bold">Shop Name</label><input id="shopName" value="MY DAIRY SHOP" class="w-full mt-1 px-3 py-2.5 rounded-xl border text-sm font-bold" oninput="updatePreview()"></div>
+          <div><label class="text-xs font-bold">Footer</label><input id="footerNote" value="Thank You! Visit Again" class="w-full mt-1 px-3 py-2.5 rounded-xl border text-sm" oninput="updatePreview()"></div>
+          <div class="flex gap-2 pt-2"><button onclick="savePrintSettings()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">Save Settings</button><button onclick="printToday()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm">🖨️ Print Today</button></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-[16px] border p-4">
+        <h3 class="font-bold mb-3 text-sm">Live Preview - Your Format</h3>
+        <div class="flex justify-center bg-slate-100 p-3 rounded-xl overflow-auto"><div id="printPreview" class="print-preview p-3 bg-white"></div></div>
+        <div class="mt-3 p-3 bg-amber-50 rounded-xl text-[11px]">
+          <b>Format:</b><br>
+          Category (centre)..................Total (last)<br>
+          SR. ITEMNAME QTY Rate Total<br>
+          1   toy       2   200   400
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4"><div class="bg-white rounded-[16px] p-6 w-full max-w-md"><h3 class="font-bold mb-4">Edit Item</h3><div class="space-y-3"><select id="editCategory" class="w-full px-4 py-3 rounded-xl border text-sm"></select><input id="editCustomCategory" placeholder="Or new category" class="w-full px-4 py-3 rounded-xl border text-sm"><input id="editName" placeholder="Item Name" class="w-full px-4 py-3 rounded-xl border text-sm"><input id="editQty" type="number" placeholder="QTY" class="w-full px-4 py-3 rounded-xl border text-sm"><input id="editRate" type="number" placeholder="Rate" class="w-full px-4 py-3 rounded-xl border text-sm"></div><div class="flex gap-3 mt-6"><button onclick="closeEditModal()" class="flex-1 py-3 rounded-xl border font-bold text-sm">Cancel</button><button onclick="saveEdit()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm">Save</button></div></div></div>
+<div id="editCategoryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4"><div class="bg-white rounded-[16px] p-6 w-full max-w-sm"><h3 class="font-bold mb-1">Edit Category</h3><p id="editCategoryInfo" class="text-xs text-slate-500 mb-4"></p><input id="editCategoryName" placeholder="Category Name" class="w-full px-4 py-3 rounded-xl border text-sm"><div class="flex gap-3 mt-6"><button onclick="closeCategoryModal()" class="flex-1 py-3 rounded-xl border font-bold text-sm">Cancel</button><button onclick="saveCategoryEdit()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm">Save</button></div></div></div>
+<div id="viewSavedModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4"><div class="bg-white rounded-[20px] p-5 w-full max-w-lg shadow-2xl max-h-[85vh] overflow-auto"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg" id="viewSavedTitle">Saved List</h3><button onclick="closeViewModal()" class="w-8 h-8 rounded-full bg-slate-100">x</button></div><div id="viewSavedContent"></div><div class="space-y-2 mt-4"><button onclick="btPrintSaved()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm">🖨️ Bluetooth Thermal 3 Inch Print</button><button onclick="systemPrintSaved()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm">🖨️ System Print</button><button onclick="closeViewModal()" class="w-full border py-3 rounded-xl font-bold text-sm">Close</button></div><p class="text-[10px] text-slate-500 text-center mt-2">BT Print = Direct Bluetooth | System Print = Phone print dialog</p></div></div>
+
+<div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm shadow-xl opacity-0 pointer-events-none transition-all z-50"></div>
+
+
+<script>
+// DATA - FIXED V2 - No UI Change, Only Logic Fixed
+let mainItems = JSON.parse(localStorage.getItem('mainItems')||'[]');
+let todayItems = JSON.parse(localStorage.getItem('todayItems')||'[]');
+let savedSheets = JSON.parse(localStorage.getItem('savedSheets')||'[]');
+let todayId = parseInt(localStorage.getItem('todayId')||'1',10);
+if(isNaN(todayId) || todayId<1) todayId=1;
+let editingId=null, editingCategoryOld=null, viewingSavedIndex=null;
+let currentFilter = localStorage.getItem('currentFilter')||'all';
+let printSettings = JSON.parse(localStorage.getItem('printSettings')||'{"paperWidth":"80","copies":1,"shopName":"ANMOL CHILDRENWEAR","footerNote":"Thank You! Visit Again","blocks":{"header":true,"date":true,"categoryBlock":true,"total":true,"footer":true}}');
+
+function saveAllData(){
+  try{
+    localStorage.setItem('mainItems', JSON.stringify(mainItems));
+    localStorage.setItem('todayItems', JSON.stringify(todayItems));
+    localStorage.setItem('todayId', String(todayId));
+    localStorage.setItem('currentFilter', currentFilter);
+  }catch(e){}
+}
+function esc(s){ if(s==null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escAttr(s){ return esc(s); }
+function safeId(prefix, str){
+  let h=0; for(let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0; }
+  let clean=str.replace(/[^a-zA-Z0-9]/g,'_');
+  return prefix+'_'+clean+'_'+Math.abs(h);
+}
+function encCat(cat){ return encodeURIComponent(cat); }
+
+function getCategories(){ return [...new Set(mainItems.map(i=>i.category))]; }
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  let scr=document.getElementById('screen-'+name);
+  if(scr) scr.classList.add('active');
+  document.querySelectorAll('[id^=nav]').forEach(b=>{ b.classList.remove('active'); b.classList.add('bg-slate-100'); });
+  let btn=document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1));
+  if(btn){ btn.classList.add('active'); btn.classList.remove('bg-slate-100'); }
+  if(name==='save') renderSaveSheets();
+  if(name==='print') updatePreview();
+}
+
+function closeAllMenus(e){
+  if(e && e.target.closest && e.target.closest('.menu-dropdown')) return;
+  document.querySelectorAll('.menu-dropdown').forEach(m=>m.classList.remove('show'));
+}
+function toggleMenu(id, e){ if(e) e.stopPropagation(); let m=document.getElementById('menu-'+id); if(m){ let o=m.classList.contains('show'); closeAllMenus(); if(!o) m.classList.add('show'); } }
+function toggleCategoryMenu(cat, e){
+  if(e) e.stopPropagation();
+  let safe=safeId('catmenu', cat);
+  let m=document.getElementById(safe);
+  if(m){ let o=m.classList.contains('show'); closeAllMenus(); if(!o) m.classList.add('show'); }
+}
+
+function toast(msg){
+  let t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg; t.style.opacity='1'; t.style.transform='translate(-50%,0)';
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,20px)'; }, 2500);
+}
+
+function addNewItem(){
+  let catSelEl=document.getElementById('newCategory');
+  let catCustomEl=document.getElementById('customCategory');
+  let nameEl=document.getElementById('newItemName');
+  let qtyEl=document.getElementById('newItemQty');
+  let rateEl=document.getElementById('newItemRate');
+  let errEl=document.getElementById('addError');
+
+  let catSel=catSelEl ? catSelEl.value.trim() : '';
+  let catCustom=catCustomEl ? catCustomEl.value.trim() : '';
+  let category=catCustom || catSel;
+  let name=nameEl ? nameEl.value.trim() : '';
+  let qty=parseFloat(qtyEl ? qtyEl.value : '');
+  let rate=parseFloat(rateEl ? rateEl.value : '');
+
+  if(errEl){ errEl.classList.add('hidden'); errEl.textContent=''; }
+
+  if(!category){ if(errEl){ errEl.textContent='⚠️ Please select Category or type new category'; errEl.classList.remove('hidden'); } toast('Select Category'); return; }
+  if(!name){ if(errEl){ errEl.textContent='⚠️ Enter Item Name'; errEl.classList.remove('hidden'); } toast('Enter Item Name'); return; }
+  if(isNaN(qty) || qty<=0){ if(errEl){ errEl.textContent='⚠️ Enter valid QTY'; errEl.classList.remove('hidden'); } toast('Enter QTY'); return; }
+  if(isNaN(rate) || rate<=0){ if(errEl){ errEl.textContent='⚠️ Enter valid Rate'; errEl.classList.remove('hidden'); } toast('Enter Rate'); return; }
+
+  let sr = mainItems.length ? Math.max(...mainItems.map(i=>i.sr))+1 : 1;
+  let newId = mainItems.length ? Math.max(...mainItems.map(i=>i.id))+1 : 1;
+  let item={id:newId, sr:sr, name:name, qty:qty, rate:rate, total:qty*rate, category:category, added:false};
+  mainItems.push(item);
+
+  if(nameEl) nameEl.value='';
+  if(qtyEl) qtyEl.value='';
+  if(rateEl) rateEl.value='';
+  if(catCustomEl) catCustomEl.value='';
+
+  saveAllData();
+  renderMainSheets();
+  toast(name + ' added in ' + category + ' ✅');
+}
+
+function renderMainSheets(){
+  let items = currentFilter==='all' ? mainItems : mainItems.filter(i=>i.category===currentFilter);
+  let groups={};
+  items.forEach(it=>{ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+  
+  let container=document.getElementById('mainCategoryGroups');
+  let empty=document.getElementById('mainEmpty');
+  if(!container || !empty) return;
+  if(items.length===0){ container.innerHTML=''; empty.classList.remove('hidden'); }
+  else {
+    empty.classList.add('hidden');
+    let html='';
+    Object.keys(groups).sort().forEach(function(cat){
+      let safe=safeId('catmenu', cat);
+      let enc=encCat(cat);
+      html+='<div class="border-b">';
+      html+='<div class="px-4 py-2.5 bg-slate-50 flex justify-between items-center border-l-4 border-indigo-500">';
+      html+='<div class="flex gap-2 items-center"><span class="font-bold text-sm">'+esc(cat)+'</span><span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">'+groups[cat].length+'</span></div>';
+      html+='<div class="relative"><button onclick="toggleCategoryMenu(decodeURIComponent(\''+enc+'\'), event)" class="w-8 h-8 rounded-full hover:bg-slate-200 font-bold">⋮</button>';
+      html+='<div id="'+safe+'" class="menu-dropdown"><div class="menu-item" onclick="editCategory(decodeURIComponent(\''+enc+'\'))">✏️ Edit Category</div><div class="menu-item" style="color:#ef4444" onclick="deleteCategory(decodeURIComponent(\''+enc+'\'))">🗑️ Delete Category</div></div></div>';
+      html+='</div>';
+      html+='<table class="w-full text-sm"><thead class="bg-slate-50 text-[11px] text-slate-500"><tr><th class="p-2 text-left">SR</th><th class="p-2 text-left">ITEM</th><th class="p-2">QTY</th><th class="p-2">RATE</th><th class="p-2">TOTAL</th><th class="p-2">ADD</th><th class="p-2">⋮</th></tr></thead><tbody>';
+      groups[cat].forEach(function(it){
+        let gi=mainItems.findIndex(m=>m.id===it.id);
+        html+='<tr class="border-t '+(it.added?'bg-green-50':'')+'"><td class="p-2">'+it.sr+'</td><td class="p-2 font-bold">'+esc(it.name)+' '+(it.added?'<span class="text-[10px] bg-green-100 text-green-700 px-1.5 rounded-full">✓</span>':'')+'</td><td class="p-2 text-center">'+it.qty+'</td><td class="p-2 text-center">₹'+it.rate+'</td><td class="p-2 text-center font-bold">₹'+it.total+'</td><td class="p-2 text-center">'+(it.added?'<span class="bg-green-600 text-white w-8 h-8 rounded-full inline-flex items-center justify-center">✓</span>':'<button onclick="moveToToday('+gi+')" class="bg-indigo-600 text-white w-8 h-8 rounded-full font-bold hover:bg-indigo-700">+</button>')+'</td><td class="p-2 text-center relative"><button onclick="toggleMenu('+it.id+', event)" class="w-8 h-8 rounded-full hover:bg-slate-100 font-bold">⋮</button><div id="menu-'+it.id+'" class="menu-dropdown"><div class="menu-item" onclick="editItem('+gi+')">✏️ Edit</div><div class="menu-item" style="color:#ef4444" onclick="deleteItem('+gi+')">🗑️ Delete</div></div></td></tr>';
+      });
+      html+='</tbody></table></div>';
+    });
+    container.innerHTML=html;
+  }
+  let badge=document.getElementById('mainCountBadge');
+  if(badge) badge.textContent=mainItems.length;
+
+  let chips=document.getElementById('categoryChips');
+  if(chips){
+    let cats=getCategories();
+    let chipHtml='<span class="text-xs text-slate-500">Filter:</span><button onclick="setFilter(\'all\')" class="px-3 py-1 rounded-full text-xs font-bold border '+(currentFilter==='all'?'bg-indigo-600 text-white':'bg-white')+'">All ('+mainItems.length+')</button>';
+    cats.forEach(function(c){
+      let enc=encCat(c);
+      let active=currentFilter===c?'bg-indigo-600 text-white':'bg-white';
+      chipHtml+='<button onclick="setFilter(decodeURIComponent(\''+enc+'\'))" class="px-3 py-1 rounded-full text-xs font-bold border '+active+'">'+esc(c)+' ('+mainItems.filter(i=>i.category===c).length+')</button>';
+    });
+    chips.innerHTML=chipHtml;
+  }
+
+  let editSel=document.getElementById('editCategory');
+  if(editSel){
+    let opts='';
+    getCategories().forEach(function(c){ opts+='<option value="'+escAttr(c)+'">'+esc(c)+'</option>'; });
+    opts+='<option value="Other">Other</option>';
+    editSel.innerHTML=opts;
+  }
+  let newSel=document.getElementById('newCategory');
+  if(newSel){
+    let existing=Array.from(newSel.options).map(o=>o.value);
+    getCategories().forEach(function(c){ if(existing.indexOf(c)===-1){ let opt=document.createElement('option'); opt.value=c; opt.textContent=c; newSel.appendChild(opt); } });
+  }
+}
+
+function setFilter(cat){
+  currentFilter = cat;
+  saveAllData();
+  renderMainSheets();
+}
+
+function renderTodaySheets(){
+  let groups={};
+  todayItems.forEach(it=>{ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+  let container=document.getElementById('todayCategoryGroups');
+  let empty=document.getElementById('todayEmptyState');
+  if(!container || !empty) return;
+  if(todayItems.length===0){ container.innerHTML=''; empty.classList.remove('hidden'); }
+  else {
+    empty.classList.add('hidden');
+    let html='';
+    Object.keys(groups).sort().forEach(function(cat){
+      html+='<div class="border-b"><div class="px-4 py-2 flex justify-between bg-emerald-50 border-l-4 border-emerald-500"><span class="font-bold text-sm">'+esc(cat)+'</span><span class="text-xs bg-emerald-100 px-2 py-0.5 rounded-full">₹'+groups[cat].reduce((s,i)=>s+i.total,0)+'</span></div><table class="w-full text-sm"><thead class="bg-slate-50 text-[11px]"><tr><th class="p-2">Tick</th><th class="p-2 text-left">ITEM</th><th class="p-2">QTY</th><th class="p-2">TOTAL</th><th class="p-2">x</th></tr></thead><tbody>';
+      groups[cat].forEach(function(it){
+        let gi=todayItems.findIndex(t=>t.id===it.id);
+        html+='<tr class="border-t '+(it.checked?'checked-row':'')+'"><td class="p-2 text-center"><input type="checkbox" '+(it.checked?'checked':'')+' onchange="toggleCheck('+gi+')" class="w-5 h-5"></td><td class="p-2 font-bold">'+esc(it.name)+'</td><td class="p-2 text-center">'+it.qty+'</td><td class="p-2 text-center font-bold">₹'+it.total+'</td><td class="p-2 text-center"><button onclick="removeFromToday('+gi+')" class="bg-red-500 text-white w-7 h-7 rounded-full">x</button></td></tr>';
+      });
+      html+='</tbody></table></div>';
+    });
+    container.innerHTML=html;
+  }
+  let el1=document.getElementById('todayItemCount'); if(el1) el1.textContent=todayItems.length;
+  let el2=document.getElementById('todayTotal'); if(el2) el2.textContent=todayItems.reduce((s,i)=>s+i.total,0);
+  let el3=document.getElementById('pendingCount'); if(el3) el3.textContent=todayItems.filter(i=>!i.checked).length;
+  let el4=document.getElementById('todayCountBadge'); if(el4) el4.textContent=todayItems.length;
+}
+
+function renderSaveSheets(){
+  let container=document.getElementById('savedListsContainer');
+  let empty=document.getElementById('saveEmpty');
+  if(!container || !empty) return;
+  if(savedSheets.length===0){ container.innerHTML=''; empty.classList.remove('hidden'); let b=document.getElementById('saveCountBadge'); if(b) b.textContent='0'; return; }
+  empty.classList.add('hidden');
+  let b=document.getElementById('saveCountBadge'); if(b) b.textContent=savedSheets.length;
+  let html='';
+  savedSheets.slice().reverse().forEach(function(sheet, revIdx){
+    let idx=savedSheets.length-1-revIdx;
+    let date=new Date(sheet.date);
+    html+='<div class="border rounded-xl p-4 bg-white"><div class="flex justify-between"><div><p class="font-bold text-sm">📅 '+date.toLocaleDateString('en-IN')+' '+date.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+'</p><p class="text-xs text-slate-500">'+sheet.items.length+' items - ₹'+sheet.total+'</p></div><div class="flex gap-1"><button onclick="viewSaved('+idx+')" class="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold">View</button><button onclick="printSavedSpecific('+idx+')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-bold">Print</button><button onclick="deleteSaved('+idx+')" class="bg-red-50 text-red-600 px-2.5 py-1.5 rounded-full text-xs">x</button></div></div></div>';
+  });
+  container.innerHTML=html;
+}
+
+function saveTodayList(){
+  if(todayItems.length===0){ toast('Today empty'); return; }
+  let total=todayItems.reduce((s,i)=>s+i.total,0);
+  let groups={}; todayItems.forEach(it=>{ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+  savedSheets.push({id:Date.now(), date:new Date().toISOString(), items:JSON.parse(JSON.stringify(todayItems)), total:total, categoryGroups:groups});
+  localStorage.setItem('savedSheets', JSON.stringify(savedSheets));
+  renderSaveSheets(); toast('Saved '+todayItems.length+' items ₹'+total); showScreen('save');
+}
+function viewSaved(idx){
+  viewingSavedIndex=idx;
+  let sheet=savedSheets[idx];
+  let titleEl=document.getElementById('viewSavedTitle');
+  if(titleEl) titleEl.textContent=new Date(sheet.date).toLocaleString('en-IN');
+  let html='<div class="space-y-3">';
+  Object.keys(sheet.categoryGroups||{}).forEach(function(cat){
+    html+='<div class="border rounded-xl overflow-hidden"><div class="bg-slate-50 px-3 py-2 font-bold text-sm flex justify-between"><span>'+esc(cat)+'</span><span class="text-xs bg-indigo-100 px-2 py-0.5 rounded-full">₹'+sheet.categoryGroups[cat].reduce((s,i)=>s+i.total,0)+'</span></div><table class="w-full text-sm"><thead class="text-[11px] text-slate-500"><tr><th class="p-2 text-left">ITEM</th><th class="p-2">QTY</th><th class="p-2">TOTAL</th></tr></thead><tbody>';
+    sheet.categoryGroups[cat].forEach(function(it){
+      html+='<tr class="border-t"><td class="p-2">'+esc(it.name)+'</td><td class="p-2 text-center">'+it.qty+'</td><td class="p-2 text-center font-bold">₹'+it.total+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  });
+  html+='<div class="bg-slate-900 text-white rounded-xl p-4 flex justify-between font-bold"><span>TOTAL</span><span>₹'+sheet.total+'</span></div></div>';
+  let contentEl=document.getElementById('viewSavedContent');
+  if(contentEl) contentEl.innerHTML=html;
+  let modal=document.getElementById('viewSavedModal');
+  if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); }
+}
+function closeViewModal(){ let m=document.getElementById('viewSavedModal'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
+function deleteSaved(idx){ if(confirm('Delete?')){ savedSheets.splice(idx,1); localStorage.setItem('savedSheets', JSON.stringify(savedSheets)); renderSaveSheets(); toast('Deleted'); } }
+function clearAllSaved(){ if(confirm('Delete all?')){ savedSheets=[]; localStorage.setItem('savedSheets', JSON.stringify(savedSheets)); renderSaveSheets(); toast('Cleared'); } }
+
+function updatePreview(){
+  let shopEl=document.getElementById('shopName');
+  let footerEl=document.getElementById('footerNote');
+  let shop=shopEl ? shopEl.value||'MY SHOP' : 'MY SHOP';
+  let footer=footerEl ? footerEl.value||'Thank You' : 'Thank You';
+  let getCheck=id=>{ let el=document.getElementById(id); return el?el.checked:true; };
+  let blocks={ header:getCheck('printHeader'), date:getCheck('printDate'), categoryBlock:getCheck('printCategoryBlock'), total:getCheck('printTotal'), footer:getCheck('printFooter') };
+  let html='';
+
+  if(blocks.header){
+    html+='<div style="text-align:center; font-weight:bold; font-size:14px;">'+esc(shop)+'</div>';
+    html+='<div style="text-align:center; font-size:10px;">------------------------------</div>';
+  }
+  if(blocks.date){
+    html+='<div style="font-size:10px;">Date: '+new Date().toLocaleString('en-IN')+'</div>';
+    html+='<div style="border-bottom:1px dashed #000; margin:4px 0;"></div>';
+  }
+
+  if(todayItems.length===0){
+    html+='<div style="text-align:center; padding:10px;">No items</div>';
+  } else {
+    let groups={};
+    todayItems.forEach(it=>{ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+    Object.keys(groups).sort().forEach(function(cat){
+      if(blocks.categoryBlock){
+        let catTotal=groups[cat].reduce((s,i)=>s+i.total,0);
+        html+='<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:3px 0; border-top:1px solid #000; border-bottom:1px solid #000; font-weight:bold; background:#f5f5f5;"><span style="flex:1; text-align:center;">'+esc(cat.toUpperCase())+'</span><span style="min-width:55px; text-align:right;">'+catTotal+'</span></div>';
+      }
+      html+='<div style="display:flex; font-weight:bold; font-size:10px; border-bottom:1px dashed #000; padding:3px 0;"><span style="width:28px;">SR.</span><span style="flex:1;">ITEMNAME</span><span style="width:30px; text-align:center;">QTY</span><span style="width:42px; text-align:right;">Rate</span><span style="width:48px; text-align:right;">Total</span></div>';
+      groups[cat].forEach(function(it, idx){
+        html+='<div style="display:flex; font-size:11px; padding:3px 0; border-bottom:1px dotted #ddd;"><span style="width:28px;">'+(idx+1)+'</span><span style="flex:1;">'+esc(it.name)+'</span><span style="width:30px; text-align:center;">'+it.qty+'</span><span style="width:42px; text-align:right;">'+it.rate+'</span><span style="width:48px; text-align:right; font-weight:bold;">'+it.total+'</span></div>';
+      });
+    });
+  }
+
+  let grand=todayItems.reduce((s,i)=>s+i.total,0);
+  if(blocks.total){
+    html+='<div style="border-top:2px solid #000; margin-top:8px; padding-top:5px; font-weight:bold; display:flex; justify-content:space-between;"><span>GRAND TOTAL</span><span>₹'+grand+'</span></div>';
+  }
+  if(blocks.footer){
+    html+='<div style="text-align:center; margin-top:10px; border-top:1px dashed #000; padding-top:6px; font-size:10px;">'+esc(footer)+'</div>';
+  }
+
+  let pv=document.getElementById('printPreview');
+  if(pv) pv.innerHTML=html;
+}
+
+function centerText(txt, width){
+  let len=txt.length;
+  if(len>=width) return txt.substring(0,width)+'\n';
+  let left=Math.floor((width-len)/2);
+  return ' '.repeat(left)+txt+' '.repeat(width-len-left)+'\n';
+}
+
+function generateText(items, settings){
+  let W = settings.paperWidth==='58' ? 32 : 48;
+  let text='';
+  let line=(c='-')=>c.repeat(W)+'\n';
+  
+  if(settings.blocks.header){ text+=centerText(settings.shopName, W); text+=line('-'); }
+  if(settings.blocks.date){ text+=new Date().toLocaleString('en-IN')+'\n'; text+=line('-'); }
+
+  if(items.length===0){ text+='No items\n'; }
+  else {
+    let groups={}; items.forEach(it=>{ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+    Object.keys(groups).sort().forEach(function(cat){
+      if(settings.blocks.categoryBlock){
+        let catTotal=groups[cat].reduce((s,i)=>s+i.total,0);
+        let catName=cat.toUpperCase();
+        let totalStr=catTotal.toString();
+        let avail=W - totalStr.length -1;
+        let centered=centerText(catName, avail).trim();
+        text+= centered.padEnd(avail,' ') + totalStr + '\n';
+        text+=line('=');
+      }
+      text+= 'SR. ITEMNAME'.padEnd(22) + 'QTY'.padStart(4) + 'Rate'.padStart(7) + 'Total'.padStart(8) + '\n';
+      text+=line('-');
+      groups[cat].forEach(function(it, idx){
+        let sr=(idx+1).toString().padEnd(2);
+        let name=it.name.length>14?it.name.substring(0,14):it.name;
+        let qty=it.qty.toString().padStart(3);
+        let rate=it.rate.toString().padStart(6);
+        let total=it.total.toString().padStart(7);
+        text+=sr+' '+name.padEnd(14)+' '+qty+' '+rate+' '+total+'\n';
+      });
+      text+=line('-');
+    });
+  }
+
+  if(settings.blocks.total){
+    text+=line('=');
+    let gt=items.reduce((s,i)=>s+i.total,0);
+    text+= 'GRAND TOTAL:'.padEnd(W-10) + ('₹'+gt).padStart(10) + '\n';
+    text+=line('=');
+  }
+  if(settings.blocks.footer){ text+=centerText(settings.footerNote, W); }
+  text+='\n\n\n';
+  let final='';
+  for(let i=0;i<(settings.copies||1);i++) final+=text;
+  return final;
+}
+
+function exportExcel(){
+  if(mainItems.length===0 && todayItems.length===0 && savedSheets.length===0){ toast('Kuch data nahi hai'); return; }
+  var wb = XLSX.utils.book_new();
+  if(mainItems.length>0){ var mainData = mainItems.map(function(it){ return { SR: it.sr, Category: it.category, ItemName: it.name, QTY: it.qty, Rate: it.rate, Total: it.total }; }); var ws1 = XLSX.utils.json_to_sheet(mainData); XLSX.utils.book_append_sheet(wb, ws1, "Main Sheets"); }
+  if(todayItems.length>0){ var todayData = todayItems.map(function(it){ return { Category: it.category, ItemName: it.name, QTY: it.qty, Rate: it.rate, Total: it.total, Checked: it.checked?'Yes':'No' }; }); var ws2 = XLSX.utils.json_to_sheet(todayData); XLSX.utils.book_append_sheet(wb, ws2, "Today Sheets"); }
+  if(savedSheets.length>0){ var saveData=[]; savedSheets.forEach(function(sheet){ sheet.items.forEach(function(it){ saveData.push({ Date: new Date(sheet.date).toLocaleDateString(), Category: it.category, ItemName: it.name, QTY: it.qty, Rate: it.rate, Total: it.total, SheetTotal: sheet.total }); }); }); var ws3 = XLSX.utils.json_to_sheet(saveData); XLSX.utils.book_append_sheet(wb, ws3, "Saved Sheets"); }
+  var fileName='ANMOL_CHILDRENWEAR_'+ new Date().toISOString().slice(0,10) + '.xlsx'; XLSX.writeFile(wb, fileName); toast('Excel Exported: '+fileName+' ✅');
+}
+function importExcel(event){
+  var file=event.target.files[0]; if(!file) return; var reader=new FileReader(); reader.onload=function(e){ try{ var data=new Uint8Array(e.target.result); var wb=XLSX.read(data,{type:'array'}); var firstSheet=wb.Sheets[wb.SheetNames[0]]; var json=XLSX.utils.sheet_to_json(firstSheet); if(json.length===0){ toast('Excel khali hai'); return; } var imported=0; json.forEach(function(row){ var category=row.Category||row.CATEGORY||row.category||'Other'; var name=row.ItemName||row.ITEM||row.Item||row.name; var qty=parseFloat(row.QTY||row.Qty||row.qty||1); var rate=parseFloat(row.Rate||row.RATE||row.rate||0); if(!name) return; var sr=mainItems.length?Math.max(...mainItems.map(i=>i.sr))+1:1; var newId=mainItems.length?Math.max(...mainItems.map(i=>i.id))+1:1; mainItems.push({id:newId,sr:sr,name:String(name).trim(),qty:isNaN(qty)?1:qty,rate:isNaN(rate)?0:rate,total:(isNaN(qty)?1:qty)*(isNaN(rate)?0:rate),category:String(category).trim(),added:false}); imported++; }); saveAllData(); renderMainSheets(); toast(imported+' items imported ✅'); event.target.value=''; }catch(err){ toast('Import failed: '+err.message); } }; reader.readAsArrayBuffer(file);
+}
+
+function backupFullApp(){
+  try{
+    var backup = { appName:"ANMOL CHILDRENWEAR", version:"2.1", backupDate:new Date().toISOString(), mainItems:mainItems, todayItems:todayItems, savedSheets:savedSheets, printSettings:printSettings, darkMode:localStorage.getItem('darkMode')||'off', todayId:todayId, currentFilter:currentFilter };
+    var json=JSON.stringify(backup,null,2); var blob=new Blob([json],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='ANMOL_FULL_BACKUP_'+ new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); toast('💾 Full Backup Done! ✅');
+  }catch(err){ toast('Backup failed: '+err.message); }
+}
+function restoreFullApp(event){
+  var file=event.target.files[0]; if(!file) return; if(!confirm('RESTORE karne se purana data overwrite ho jayega!\n'+file.name+' restore karna hai?')){ event.target.value=''; return; } var reader=new FileReader(); reader.onload=function(e){ try{ var backup=JSON.parse(e.target.result); if(!backup.mainItems && !backup.todayItems && !backup.savedSheets) throw new Error('Invalid backup'); if(backup.mainItems) mainItems=backup.mainItems; if(backup.todayItems) todayItems=backup.todayItems; if(backup.savedSheets) savedSheets=backup.savedSheets; if(backup.printSettings) printSettings=backup.printSettings; if(backup.todayId) todayId=backup.todayId; if(backup.currentFilter) currentFilter=backup.currentFilter; if(backup.darkMode){ localStorage.setItem('darkMode',backup.darkMode); if(backup.darkMode==='on') document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); } saveAllData(); localStorage.setItem('savedSheets', JSON.stringify(savedSheets)); localStorage.setItem('printSettings', JSON.stringify(printSettings)); renderMainSheets(); renderTodaySheets(); renderSaveSheets(); loadSettings(); updatePreview(); toast('♻️ Restore Done! ✅'); event.target.value=''; }catch(err){ toast('Restore failed: '+err.message); } }; reader.readAsText(file);
+}
+function deleteSelectedCategory(){ var sel=document.getElementById('newCategory'); var cat=sel ? sel.value : ''; if(!cat){ toast('⚠️ Pehle Category select karo'); return; } if(cat.toLowerCase()==='other'){ toast('Other delete nahi kar sakte'); return; } deleteCategory(cat); }
+
+function savePrintSettings(){
+  let pw=document.getElementById('paperWidth'); let cp=document.getElementById('copies');
+  let sn=document.getElementById('shopName'); let fn=document.getElementById('footerNote');
+  printSettings={ paperWidth:pw?pw.value:'80', copies:cp?parseInt(cp.value):1, shopName:sn?sn.value:'MY SHOP', footerNote:fn?fn.value:'Thank You', blocks:{ header:document.getElementById('printHeader')?document.getElementById('printHeader').checked:true, date:document.getElementById('printDate')?document.getElementById('printDate').checked:true, categoryBlock:document.getElementById('printCategoryBlock')?document.getElementById('printCategoryBlock').checked:true, total:document.getElementById('printTotal')?document.getElementById('printTotal').checked:true, footer:document.getElementById('printFooter')?document.getElementById('printFooter').checked:true } };
+  localStorage.setItem('printSettings', JSON.stringify(printSettings));
+  updatePreview(); toast('Settings saved');
+}
+
+let bluetoothDevice=null;
+let bluetoothCharacteristic=null;
+
+async function connectPrinter(){
+  let infoEl=document.getElementById('printerInfo');
+  let statusEl=document.getElementById('btStatus');
+  if(!navigator.bluetooth){
+    if(infoEl) infoEl.innerHTML='<div style="background:#fef3c7; padding:8px; border-radius:8px; font-size:11px;">⚠️ Web Bluetooth not available. Use <b>System Print</b> button.</div>';
+    alert('Bluetooth not supported. Use System Print'); return;
+  }
+  try{
+    if(infoEl) infoEl.textContent='Scanning...';
+    var device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: ['00001101-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', '000018f0-0000-1000-8000-00805f9b34fb'] });
+    bluetoothDevice=device;
+    var server = await device.gatt.connect();
+    try {
+      var services = await server.getPrimaryServices();
+      for(var s=0; s<services.length; s++){
+        try {
+          var chars = await services[s].getCharacteristics();
+          for(var c=0; c<chars.length; c++){
+            if(chars[c].properties.write || chars[c].properties.writeWithoutResponse){ bluetoothCharacteristic=chars[c]; break; }
+          }
+          if(bluetoothCharacteristic) break;
+        } catch(e){}
+      }
+    } catch(e){}
+    if(statusEl){ statusEl.textContent=(device.name||'Printer')+' Connected'; statusEl.className='text-[11px] px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold'; }
+    if(infoEl){ infoEl.innerHTML='<b>'+esc(device.name||'Printer')+'</b> Connected'; }
+    toast('Printer Connected: '+(device.name||'Printer'));
+    device.addEventListener('gattserverdisconnected', function(){
+      if(statusEl){ statusEl.textContent='Disconnected'; statusEl.className='text-[11px] px-3 py-1 rounded-full bg-red-100 text-red-700'; }
+      if(infoEl) infoEl.textContent='Disconnected';
+      bluetoothCharacteristic=null;
+    });
+  } catch(err){
+    if(statusEl){ statusEl.textContent='Not Connected'; }
+    if(infoEl) infoEl.textContent='Failed: '+err.message;
+    toast('Connect failed: '+err.message);
+  }
+}
+
+async function btPrintText(text){
+  if(!bluetoothCharacteristic){ toast('BT Printer not connected - Use System Print'); return false; }
+  try{
+    var encoder=new TextEncoder();
+    var data=encoder.encode(text);
+    var chunkSize=512;
+    for(var i=0;i<data.length;i+=chunkSize){
+      var chunk=data.slice(i, i+chunkSize);
+      await bluetoothCharacteristic.writeValue(chunk);
+      await new Promise(r=>setTimeout(r,100));
+    }
+    toast('Sent to BT Printer'); return true;
+  } catch(err){ toast('BT Print failed: '+err.message); return false; }
+}
+
+function testPrint(){ var txt=generateText([{name:'toy', qty:2, rate:200, total:400, category:'Toys'}], printSettings); if(bluetoothCharacteristic){ btPrintText(txt); } else { alert('PREVIEW:\n\n'+txt); } }
+async function btPrintToday(){ if(todayItems.length===0){ toast('Nothing to print'); return; } savePrintSettings(); var txt=generateText(todayItems, printSettings); var ok=await btPrintText(txt); if(!ok){ systemPrintToday(); } }
+function systemPrintToday(){
+  if(todayItems.length===0){ toast('Nothing to print'); return; }
+  savePrintSettings();
+  let groups={}; todayItems.forEach(function(it){ if(!groups[it.category]) groups[it.category]=[]; groups[it.category].push(it); });
+  let body='';
+  Object.keys(groups).sort().forEach(function(cat){
+    let catTotal=groups[cat].reduce((s,i)=>s+i.total,0);
+    body+='<div style="display:flex; justify-content:space-between; font-weight:bold; border-top:1px solid #000; border-bottom:1px solid #000; padding:6px 0; margin-top:10px; background:#f5f5f5;"><span style="flex:1; text-align:center;">'+esc(cat.toUpperCase())+'</span><span>'+catTotal+'</span></div>';
+    body+='<div style="display:flex; font-weight:bold; font-size:12px; border-bottom:1px dashed #000; padding:4px 0;"><span style="width:30px;">SR.</span><span style="flex:1;">ITEMNAME</span><span style="width:35px; text-align:center;">QTY</span><span style="width:50px; text-align:right;">Rate</span><span style="width:55px; text-align:right;">Total</span></div>';
+    groups[cat].forEach(function(it, idx){
+      body+='<div style="display:flex; padding:4px 0; border-bottom:1px dotted #ccc; font-size:13px;"><span style="width:30px;">'+(idx+1)+'</span><span style="flex:1;">'+esc(it.name)+'</span><span style="width:35px; text-align:center;">'+it.qty+'</span><span style="width:50px; text-align:right;">'+it.rate+'</span><span style="width:55px; text-align:right; font-weight:bold;">'+it.total+'</span></div>';
+    });
+  });
+  let grand=todayItems.reduce((s,i)=>s+i.total,0);
+  let htmlDoc='<!DOCTYPE html><html><head><title>Print</title><style>@media print{ @page{ size:80mm auto; margin:2mm; } body{ width:72mm; font-family:monospace; } }</style></head><body><div style="text-align:center; font-weight:bold; font-size:16px;">'+esc(printSettings.shopName)+'</div><div style="text-align:center; font-size:10px;">Today - '+new Date().toLocaleString('en-IN')+'</div><div style="border-bottom:1px dashed #000; margin:6px 0;"></div>'+body+'<div style="border-top:2px solid #000; margin-top:10px; padding-top:6px; display:flex; justify-content:space-between; font-weight:bold; font-size:14px;"><span>GRAND TOTAL</span><span>Rs.'+grand+'</span></div><div style="text-align:center; margin-top:12px; border-top:1px dashed #000; padding-top:6px; font-size:11px;">'+esc(printSettings.footerNote)+'</div></body></html>';
+  let w=window.open('','_blank'); w.document.write(htmlDoc); w.document.close(); setTimeout(function(){ w.print(); }, 300);
+  toast('System Print opened');
+}
+function printToday(){ systemPrintToday(); }
+function printSavedSpecific(idx){ viewingSavedIndex=idx; viewSaved(idx); }
+async function btPrintSaved(){ let sheet = viewingSavedIndex!==null ? savedSheets[viewingSavedIndex] : null; if(!sheet){ toast('No sheet'); return; } let txt=generateText(sheet.items, printSettings); let ok=await btPrintText(txt); if(!ok){ systemPrintSaved(); } else { closeViewModal(); } }
+function systemPrintSaved(){
+  let sheet = viewingSavedIndex!==null ? savedSheets[viewingSavedIndex] : null;
+  if(!sheet){ toast('No sheet'); return; }
+  let groups=sheet.categoryGroups||{}; let body='';
+  Object.keys(groups).sort().forEach(function(cat){
+    let catTotal=groups[cat].reduce((s,i)=>s+i.total,0);
+    body+='<div style="display:flex; justify-content:space-between; font-weight:bold; border-top:1px solid #000; border-bottom:1px solid #000; padding:6px 0; margin-top:10px; background:#f5f5f5;"><span style="flex:1; text-align:center;">'+esc(cat.toUpperCase())+'</span><span>'+catTotal+'</span></div>';
+    body+='<div style="display:flex; font-weight:bold; font-size:12px; border-bottom:1px dashed #000; padding:4px 0;"><span style="width:30px;">SR.</span><span style="flex:1;">ITEMNAME</span><span style="width:35px; text-align:center;">QTY</span><span style="width:50px; text-align:right;">Rate</span><span style="width:55px; text-align:right;">Total</span></div>';
+    groups[cat].forEach(function(it, idx){
+      body+='<div style="display:flex; padding:4px 0; border-bottom:1px dotted #ccc; font-size:13px;"><span style="width:30px;">'+(idx+1)+'</span><span style="flex:1;">'+esc(it.name)+'</span><span style="width:35px; text-align:center;">'+it.qty+'</span><span style="width:50px; text-align:right;">'+it.rate+'</span><span style="width:55px; text-align:right; font-weight:bold;">'+it.total+'</span></div>';
+    });
+  });
+  let htmlDoc='<!DOCTYPE html><html><head><title>Print</title><style>@media print{ @page{ size:80mm auto; margin:2mm; } body{ width:72mm; font-family:monospace; } }</style></head><body><div style="text-align:center; font-weight:bold; font-size:16px;">'+esc(printSettings.shopName)+'</div><div style="text-align:center; font-size:10px;">'+new Date(sheet.date).toLocaleString('en-IN')+'</div><div style="border-bottom:1px dashed #000; margin:6px 0;"></div>'+body+'<div style="border-top:2px solid #000; margin-top:10px; padding-top:6px; display:flex; justify-content:space-between; font-weight:bold; font-size:14px;"><span>GRAND TOTAL</span><span>Rs.'+sheet.total+'</span></div><div style="text-align:center; margin-top:12px; border-top:1px dashed #000; padding-top:6px; font-size:11px;">'+esc(printSettings.footerNote)+'</div></body></html>';
+  let w=window.open('','_blank'); w.document.write(htmlDoc); w.document.close(); setTimeout(function(){ w.print(); }, 300);
+  closeViewModal();
+}
+function printThisSaved(){ systemPrintSaved(); }
+
+function editItem(idx){ closeAllMenus(); if(idx<0||idx>=mainItems.length) return; editingId=mainItems[idx].id; let it=mainItems[idx]; let catEl=document.getElementById('editCategory'); if(catEl) catEl.value=it.category; let nEl=document.getElementById('editName'); if(nEl) nEl.value=it.name; let qEl=document.getElementById('editQty'); if(qEl) qEl.value=it.qty; let rEl=document.getElementById('editRate'); if(rEl) rEl.value=it.rate; let modal=document.getElementById('editModal'); if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); } }
+function closeEditModal(){ let m=document.getElementById('editModal'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } editingId=null; }
+function saveEdit(){
+  let catEl=document.getElementById('editCategory'); let customEl=document.getElementById('editCustomCategory');
+  let cat=catEl?catEl.value:''; let custom=customEl?customEl.value.trim():''; let category=custom||cat;
+  let nameEl=document.getElementById('editName'); let qtyEl=document.getElementById('editQty'); let rateEl=document.getElementById('editRate');
+  let name=nameEl?nameEl.value.trim():''; let qty=qtyEl?parseFloat(qtyEl.value):NaN; let rate=rateEl?parseFloat(rateEl.value):NaN;
+  if(!category||!name||isNaN(qty)||isNaN(rate)){ toast('Fill all'); return; }
+  let idx=mainItems.findIndex(m=>m.id===editingId);
+  if(idx>=0){ mainItems[idx].category=category; mainItems[idx].name=name; mainItems[idx].qty=qty; mainItems[idx].rate=rate; mainItems[idx].total=qty*rate; saveAllData(); renderMainSheets(); renderTodaySheets(); closeEditModal(); toast('Updated'); }
+}
+function deleteItem(idx){ closeAllMenus(); if(idx<0||idx>=mainItems.length) return; if(!confirm('Delete "'+mainItems[idx].name+'"?')) return; let id=mainItems[idx].id; mainItems.splice(idx,1); todayItems=todayItems.filter(t=>t.mainId!==id); mainItems.forEach((it,i)=>it.sr=i+1); saveAllData(); renderMainSheets(); renderTodaySheets(); toast('Deleted'); }
+function editCategory(cat){ closeAllMenus(); editingCategoryOld=cat; let nameEl=document.getElementById('editCategoryName'); if(nameEl) nameEl.value=cat; let infoEl=document.getElementById('editCategoryInfo'); if(infoEl) infoEl.textContent=mainItems.filter(i=>i.category===cat).length+' items'; let modal=document.getElementById('editCategoryModal'); if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); } }
+function closeCategoryModal(){ let m=document.getElementById('editCategoryModal'); if(m){ m.classList.add('hidden'); m.classList.remove('flex'); } }
+function saveCategoryEdit(){ let newEl=document.getElementById('editCategoryName'); let newName=newEl?newEl.value.trim():''; if(!newName) return; mainItems.forEach(it=>{ if(it.category===editingCategoryOld) it.category=newName; }); todayItems.forEach(it=>{ if(it.category===editingCategoryOld) it.category=newName; }); if(currentFilter===editingCategoryOld) currentFilter=newName; saveAllData(); closeCategoryModal(); renderMainSheets(); renderTodaySheets(); toast('Renamed'); }
+function deleteCategory(cat){ closeAllMenus(); if(!confirm('Delete category "'+cat+'"? All items will be deleted.')) return; mainItems=mainItems.filter(i=>i.category!==cat); todayItems=todayItems.filter(i=>i.category!==cat); mainItems.forEach((it,i)=>it.sr=i+1); if(currentFilter===cat) currentFilter='all'; saveAllData(); renderMainSheets(); renderTodaySheets(); toast('Deleted'); }
+function moveToToday(idx){ if(idx<0||idx>=mainItems.length) return; let it=mainItems[idx]; if(it.added){ toast('Already added'); return; } it.added=true; todayItems.push({...it, mainId:it.id, id:todayId++, checked:false}); saveAllData(); renderMainSheets(); renderTodaySheets(); toast(it.name+' → Today'); }
+function removeFromToday(idx){ if(idx<0||idx>=todayItems.length) return; let r=todayItems[idx]; todayItems.splice(idx,1); let m=mainItems.find(x=>x.id===r.mainId); if(m) m.added=false; saveAllData(); renderMainSheets(); renderTodaySheets(); }
+function toggleCheck(idx){ if(idx<0||idx>=todayItems.length) return; todayItems[idx].checked=!todayItems[idx].checked; saveAllData(); renderTodaySheets(); }
+function clearToday(){ if(confirm('Clear Today?')){ todayItems.forEach(t=>{ let m=mainItems.find(x=>x.id===t.mainId); if(m) m.added=false; }); todayItems=[]; saveAllData(); renderMainSheets(); renderTodaySheets(); } }
+
+function toggleSettingsMenu(e){ if(e) e.stopPropagation(); let dd=document.getElementById('settingsDropdown'); if(dd) dd.classList.toggle('hidden'); }
+function closeSettingsMenu(){ let dd=document.getElementById('settingsDropdown'); if(dd) dd.classList.add('hidden'); }
+function handleSettingAction(action){ closeSettingsMenu(); if(action==='backup'){ backupFullApp(); } else if(action==='restore'){ document.getElementById('restoreFile').click(); } else if(action==='import'){ document.getElementById('importFile').click(); } else if(action==='export'){ exportExcel(); } }
+document.addEventListener('click', function(e){ let dd=document.getElementById('settingsDropdown'); let btn=document.getElementById('settingBtn'); if(dd && !dd.classList.contains('hidden')){ if(!dd.contains(e.target) && !btn.contains(e.target)){ dd.classList.add('hidden'); } } });
+
+function toggleDarkMode(){ let body=document.body; let btn=document.getElementById('darkModeBtn'); body.classList.toggle('dark-mode'); let isDark=body.classList.contains('dark-mode'); localStorage.setItem('darkMode', isDark ? 'on' : 'off'); if(btn){ btn.textContent = isDark ? '☀️' : '🌙'; btn.style.background = isDark ? '#f59e0b' : '#0f172a'; } toast(isDark ? '🌙 Dark Mode ON' : '☀️ Light Mode ON'); }
+(function(){ let saved=localStorage.getItem('darkMode'); if(saved==='on'){ document.body.classList.add('dark-mode'); setTimeout(function(){ let btn=document.getElementById('darkModeBtn'); if(btn){ btn.textContent='☀️'; btn.style.background='#f59e0b'; } },100); } })();
+
+function loadSettings(){
+  let pw=document.getElementById('paperWidth'); if(pw) pw.value=printSettings.paperWidth||'80';
+  let cp=document.getElementById('copies'); if(cp) cp.value=printSettings.copies||1;
+  let sn=document.getElementById('shopName'); if(sn) sn.value=printSettings.shopName||'ANMOL CHILDRENWEAR';
+  let fn=document.getElementById('footerNote'); if(fn) fn.value=printSettings.footerNote||'Thank You! Visit Again';
+  let ph=document.getElementById('printHeader'); if(ph) ph.checked=printSettings.blocks ? printSettings.blocks.header!==false : true;
+  let pd=document.getElementById('printDate'); if(pd) pd.checked=printSettings.blocks ? printSettings.blocks.date!==false : true;
+  let pcb=document.getElementById('printCategoryBlock'); if(pcb) pcb.checked=printSettings.blocks ? printSettings.blocks.categoryBlock!==false : true;
+  let pt=document.getElementById('printTotal'); if(pt) pt.checked=printSettings.blocks ? printSettings.blocks.total!==false : true;
+  let pf=document.getElementById('printFooter'); if(pf) pf.checked=printSettings.blocks ? printSettings.blocks.footer!==false : true;
+}
+
+loadSettings(); renderMainSheets(); renderTodaySheets(); renderSaveSheets(); updatePreview();
+</script>
+</body>
+</html>
