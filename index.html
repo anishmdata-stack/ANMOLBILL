@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#6d42d8"><title>ACTS Billing App</title>
+<style>
+:root{--bg:#f5f1e8;--surface:#fff;--surface-2:#f9f6f0;--line:#e8e0d0;--text:#1a1a1a;--muted:#8a8a8a;--purple:#6d42d8;--green:#168653;--danger:#c53c45}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:10px 13px;background:#eee7ff;color:#3d238a;font-weight:700}button.primary{background:var(--purple);color:white}button.good{background:#dff5e8;color:#12683f}button.danger{background:#ffebec;color:#a82b35}button.ghost{background:#f2f0ec;color:#333}button.small{padding:6px 9px;border-radius:9px;font-size:12px}input,select,textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--text)}label{display:block;font-size:12px;font-weight:700;color:#69645d;margin:7px 0 4px}.app{max-width:1180px;margin:auto;padding-bottom:90px}.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px}.brand{font-weight:900;letter-spacing:.3px}.brand small{display:block;font-weight:500;color:var(--muted);font-size:11px}.screen{display:none;padding:14px}.screen.active{display:block}.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #3c291008}.panel h2{font-size:17px;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.row .fit{flex:0 0 auto}.muted{color:var(--muted);font-size:12px}.mono{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;opacity:.7}.total{font-size:23px;font-weight:900}.pill{display:inline-block;padding:4px 8px;border-radius:30px;background:#eee7ff;color:#5633b3;font-size:11px;font-weight:800}.camera{height:220px;background:#090909;color:#aaa;border-radius:13px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center}.camera video{width:100%;height:100%;object-fit:cover}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;min-width:530px}th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}th{background:#191919;color:#fff;position:sticky;top:0}td input{padding:6px;font-size:12px;min-width:55px}.billcard{border:1px solid var(--line);border-radius:14px;padding:12px;margin:9px 0;background:#fff}.billhead{display:flex;justify-content:space-between;gap:10px}.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.bottom{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 3px calc(7px + env(safe-area-inset-bottom));overflow-x:auto}.bottom button{background:transparent;color:#777;padding:5px 6px;min-width:52px;font-size:10px;white-space:nowrap}.bottom button span{display:block;font-size:20px;margin-bottom:2px}.bottom button.active{color:var(--purple);background:#f1ebff;border-radius:10px}.hidden{display:none!important}.qty{display:flex;align-items:center;gap:5px}.qty button{padding:4px 9px}.receipt{width:300px;max-width:100%;margin:auto;background:#fff;color:#000;padding:12px;font-family:Arial,sans-serif;font-weight:900}.receipt *{color:#000}.receipt h2{font-size:18px;text-align:center;margin:0 0 4px}.receipt p{font-size:12px;margin:4px 0}.receipt table{min-width:0;font-size:11px}.receipt th{background:#fff;color:#000;border-bottom:2px solid #000;padding:5px 2px}.receipt td{padding:5px 2px;border-bottom:1px dashed #aaa}.receipt .grand{text-align:right;font-size:20px;margin-top:10px}.receipt .tiny{text-align:right;font-size:11px}.layoutrow{display:flex;gap:5px;flex-wrap:wrap}.layoutrow button{padding:7px 10px}.stat{border-radius:15px;padding:14px;background:#eee7ff}.stat.green{background:#e0f6e8}.stat small{display:block;color:#655b76}.stat strong{font-size:21px}.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);background:#222;color:#fff;border-radius:12px;padding:10px 15px;z-index:30;display:none;max-width:90%;box-shadow:0 5px 20px #0003}.err{color:var(--danger);font-size:12px;white-space:pre-wrap}.logo{font-weight:1000;letter-spacing:1px;font-size:22px}.sidebar{display:none}.desktopnav{display:none}@media(min-width:850px){.app{padding-bottom:20px}.bottom{display:none}.screen{padding:20px}.top{padding:15px 22px}.desktopnav{display:flex;gap:6px}.desktopnav button{font-size:12px}.layout-laptop .bottom{display:none}.layout-laptop .screen{max-width:1100px;margin:auto}}@media(max-width:849px){.top{padding:10px 12px;gap:8px;min-height:0}.top>.brand{flex:1;min-width:0}.top>.row{flex:0 0 auto!important;width:auto!important;max-width:none!important}.top .brand{font-size:12px}.top .brand small{font-size:10px}.desktopnav{display:none!important}}@media(max-width:420px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}.top .brand{font-size:13px}.bottom button{min-width:44px;font-size:9px}.bottom button span{font-size:18px}}
+
+:root{--bg:#f4f2ff;--surface:#fff;--surface-2:#fff8f1;--line:#e7e3f4;--text:#201a35;--muted:#7d7890;--purple:#6b3fe8;--green:#11865b;--danger:#cf3551;--orange:#ff8a35;--blue:#2689e8;--pink:#f35a9d}
+body{background:radial-gradient(ellipse at 0% 0%,#eee7ff 0,transparent 36%),radial-gradient(ellipse at 100% 5%,#ffe8f2 0,transparent 28%),var(--bg);color:var(--text)}
+button{transition:transform .12s ease,box-shadow .12s ease;background:#f0ebff;color:#4e2bb5;box-shadow:0 2px 0 #3d238a0d}button:active{transform:translateY(1px)}button.primary{background:linear-gradient(135deg,#7448f5,#9b52e8);box-shadow:0 5px 14px #7448f52b}button.good{background:linear-gradient(135deg,#d9f8e7,#c9f2dc);color:#116b45}button.danger{background:#fff0f3;color:#b72746}input:focus,select:focus,textarea:focus{outline:3px solid #8c65f52b;border-color:#916cf0}.top{background:#ffffffed;backdrop-filter:blur(16px);box-shadow:0 5px 22px #4a2b8310}.logo{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:10px;background:linear-gradient(110deg,#ff8a35,#f35a9d,#7552f5,#28a8e0,#22b777);color:white;text-shadow:0 1px 2px #0002;box-shadow:0 4px 12px #7046d52b}.panel{border-color:#e9e4f6;box-shadow:0 7px 24px #3722670b;border-radius:20px}.panel h2{color:#342454}.pill{background:#f0eaff;color:#5c38c4}.camera{border:2px solid #28203e;background:linear-gradient(145deg,#141020,#2b2140);box-shadow:inset 0 0 25px #0008}.stat{background:linear-gradient(135deg,#eee7ff,#f9efff);border:1px solid #e2d5ff}.stat.green{background:linear-gradient(135deg,#dff9ea,#effff5);border-color:#cceedd}.billcard{border-color:#e8e2f4;box-shadow:0 4px 14px #33205d08}.bottom{background:#ffffffed;backdrop-filter:blur(14px);box-shadow:0 -5px 24px #34205d0b;border-top-color:#e6e0f4}.bottom button.active{background:linear-gradient(135deg,#eee7ff,#fbe9f5);color:#6338df}.bottom button.active span{filter:saturate(1.2)}
+.receipt{width:300px;max-width:100%;padding:12px 10px;background:#fff;color:#000;font-family:Arial,sans-serif;font-weight:900;border:0;box-shadow:none}.receipt table{table-layout:fixed;width:100%;font-size:11px}.receipt th,.receipt td{padding:5px 3px;overflow-wrap:anywhere}.receipt th{letter-spacing:.1px}.receipt .qrWrap{display:flex;flex-direction:column;align-items:center;gap:5px;margin:10px auto}.receipt canvas.upiQr{width:130px;height:130px;image-rendering:pixelated}.helper-note{padding:9px 11px;background:#f8f5ff;border:1px solid #e9e0ff;border-radius:12px;color:#6d6480;font-size:12px}
+@media(min-width:850px){.app{padding:0 12px 25px}.top{border-radius:0 0 18px 18px;margin-bottom:10px}.desktopnav button{border-radius:10px}.screen{padding:18px}.screen.active{animation:screenIn .18s ease-out}}
+@keyframes screenIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.receipt[data-layout="1"] h2{text-align:center}.receipt[data-layout="2"] h2{text-align:left}.receipt[data-layout="2"] p{text-align:left!important}.receipt[data-layout="3"] hr{border:0;border-top:2px dashed #000}.receipt[data-layout="4"] h2:first-child{border-bottom:3px double #000;padding-bottom:6px}.receipt[data-layout="5"] p,.receipt[data-layout="5"] td,.receipt[data-layout="5"] th{font-size:10px;padding-top:2px;padding-bottom:2px}.receipt[data-layout="6"] .grand{border:2px solid #000;padding:8px}.receipt[data-layout="7"] .grand{font-size:24px}.receipt[data-layout="8"] .tiny{display:none}.receipt[data-layout="9"] h2:first-child{display:inline-block;background:#000;color:#fff!important;padding:5px 12px;margin:0 auto 8px}.receipt[data-layout="10"] .grand{border-top:3px double #000;border-bottom:3px double #000;padding:8px 0}
+
+@media print{body{background:#fff!important}.top,.bottom,.screen:not(#screen-receipt),#screen-receipt>.panel>h2,#layoutButtons,.grid3,#downloadPng,#downloadPdf,#receiptBluetooth,#receiptShare,#receiptWhatsApp,.muted,.actions{display:none!important}.app,.screen,#screen-receipt,#screen-receipt>.panel{display:block!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:#fff!important}.receipt{width:76mm!important;max-width:76mm!important;margin:0!important;padding:1mm!important;box-shadow:none!important;border:0!important}.receipt table{min-width:0!important;width:100%!important}.receipt th{position:static!important}}
+
+</style></head>
+<body><div class="app" id="app"><header class="top"><div class="brand"><span class="logo">ACTS</span> ANMOL CHILDRENWEAR<small>Billing • Stock sales • Udhar</small></div><div class="row" style="max-width:260px"><button class="ghost small" id="laptopToggle">💻 Laptop Mode</button><button class="ghost small" id="quickNew">＋ Bill</button></div><nav class="desktopnav" id="desktopnav"></nav></header><main>
+<section class="screen active" id="screen-create"><div class="panel"><h2>📦 QR Scanner <span class="pill" id="scanStatus">jsQR ready</span></h2><div class="camera" id="cameraBox"><span id="cameraText">Camera off<br><small>Scan QR / barcode or enter SKU manually</small></span><video id="video" class="hidden" playsinline></video></div><div class="actions"><button class="primary small" id="scanBtn">Scan</button><button class="ghost small" id="stopBtn">Stop</button><button class="ghost small" id="rearBtn">Rear</button><button class="ghost small" id="frontBtn">Front</button><label class="ghost small" style="margin:0;display:flex;align-items:center;justify-content:center;cursor:pointer">Img<input id="qrImage" type="file" accept="image/*" class="hidden"></label><button class="ghost small" id="flashBtn">🔦 Flash</button><button class="ghost small" id="flipBtn">🔄 Flip</button></div><div class="row" style="margin-top:8px"><input id="manualScan" placeholder="Manual SKU / scanned code"><button class="primary small fit" id="manualScanAdd">+ Add</button></div><p class="mono">1 scan = auto close • 2 sec duplicate block • small Scan button 36px • Format: Baby Booties /473120856/269</p></div>
+<div class="panel"><h2>Manual Entry <span class="muted">inline with small Scan</span><button class="small" style="float:right" onclick="startScan()">Scan</button></h2><div class="grid"><div><label>Item Name</label><input id="itemName" placeholder="e.g. Baby Booties"></div><div><label>SKU / Code</label><input id="itemSku" placeholder="Digits only"></div><div><label>Rate (₹)</label><input id="itemRate" inputmode="numeric" placeholder="Selling price"></div><div><label>Qty</label><div class="qty"><button id="entryMinus">−</button><input id="itemQty" type="number" min="1" value="1"><button id="entryPlus">＋</button></div></div></div><div class="actions"><button class="primary" id="addItem">＋ Add</button></div><p class="mono">QR parse: Baby Booties /473120856/269 → Name/SKU/Rate | SKU: <span id="helperSku">—</span> • Qty <span id="helperQty">1</span></p></div>
+<div class="panel"><h2>Bill Table <span class="pill" id="itemCount">0 items</span></h2><div class="tablewrap"><table><thead><tr><th>NO.</th><th>ITEM NAME</th><th>QTY</th><th>RATE</th><th>TOTAL</th><th>ACTION</th></tr></thead><tbody id="billItems"></tbody></table></div><div class="grid3" style="margin-top:12px"><div><label>Grand Total</label><div class="total" id="grandTotal">₹0</div></div><div><label>Total Code</label><div class="total" id="totalCode">₹0</div></div><div><label>Profit</label><div class="total" id="billProfit">₹0</div></div></div></div>
+<div class="panel"><h2>Customer & Payment</h2><div class="grid"><div><label>Customer Name (optional)</label><input id="customerName" placeholder="Walk-in customer"></div><div><label>Mobile (optional)</label><input id="customerMobile" inputmode="numeric" placeholder="Mobile number"></div></div><label>Payment Mode</label><div class="layoutrow" id="payModes"><button class="primary" data-mode="Cash">Cash</button><button data-mode="UPI">UPI</button><button data-mode="Slip">Slip</button></div><div class="grid"><div><label>Discount (₹)</label><input id="discount" inputmode="numeric" value="0"></div><div style="display:flex;align-items:end;padding-bottom:8px"><label style="display:flex;align-items:center;gap:8px;margin:0"><input id="paidCheck" type="checkbox" checked style="width:auto"> Paid</label></div></div><div class="actions"><button class="primary" id="saveBill">Save Bill</button><button class="ghost" id="clearBill">Clear</button></div><p class="muted">If unpaid, bill is added to Udhar for this app session and saved in this browser.</p></div></section>
+<section class="screen" id="screen-bills"><div class="panel"><h2>📄 Bills <span class="pill" id="billCount">0</span></h2><input id="billSearch" placeholder="Search Bill Number, Customer, Mobile"><div id="billsList"></div></div></section>
+<section class="screen" id="screen-profit"><div class="grid"><div class="stat"><small>Last Bill</small><strong id="lastBillStat">—</strong><div id="lastBillSales">Sales ₹0</div></div><div class="stat green"><small>Total Profit</small><strong id="allProfit">₹0</strong><div id="profitCaption">All bills</div></div></div><div class="panel" style="margin-top:12px"><h2>💰 Profit Summary</h2><p id="profitExample" class="mono">Profit = Grand Total − Total Code</p><div class="layoutrow" id="profitFilters"><button class="primary" data-filter="Today">Today</button><button data-filter="Month">Month</button><button data-filter="All">All</button></div><div id="profitBills"></div></div></section>
+<section class="screen" id="screen-receipt"><div class="panel"><h2>🧾 Receipt Layouts — 10 with ACTS Logo</h2><div class="logo" style="filter:contrast(1.6) brightness(1.05) saturate(1.2)">ACTS</div><p class="muted">Choose a receipt style</p><div class="layoutrow" id="layoutButtons"></div><div class="grid3"><label><input type="checkbox" id="showBillNo" checked style="width:auto"> Show Bill No</label><label><input type="checkbox" id="showDate" checked style="width:auto"> Show Date</label><label><input type="checkbox" id="showCustomer" checked style="width:auto"> Show Customer</label><label><input type="checkbox" id="showMobile" checked style="width:auto"> Show Mobile</label><label><input type="checkbox" id="showQR" checked style="width:auto"> Show QR</label><label><input type="checkbox" id="showLogo" checked style="width:auto"> Show Shop Logo</label></div><div class="grid"><div><label>Paper Size</label><select id="receiptPaper"><option>3 inch thermal</option><option>2 inch</option><option>A4</option></select></div><div><label>Thank You!</label><input id="thankYou" value="Thank You! Visit Again"></div></div><div id="receiptPreview" class="receipt" style="margin-top:12px"></div><div class="actions"><button class="primary" id="downloadPng">Download PNG</button><button id="downloadPdf">Download PDF / Print</button><button id="receiptBluetooth">🖨️ Bluetooth Print</button><button id="receiptShare">Share</button><button id="receiptWhatsApp">WhatsApp</button></div><p class="muted">Receipt preview can be printed/saved as PDF using your browser. PNG download uses the canvas renderer.</p></div></section>
+<section class="screen" id="screen-settings"><div class="panel"><h2>⚙️ Shop Details</h2><label>Shop Name</label><input id="shopName" value="ANMOL CHILDRENWEAR & TOY SHOP"><label>Address</label><input id="shopAddress" value="Doshihat, Kapad Bazar, Dholka - 382225"><div class="grid"><div><label>Mobile</label><input id="shopMobile" inputmode="tel" value="9687393089"></div><div><label>UPI ID</label><input id="shopUpi" placeholder="yourname@upi"></div></div><label>UPI Name</label><input id="shopUpiName" placeholder="Shop / account name"><button class="primary" id="saveShop" style="margin-top:10px">Save Shop</button></div>
+<div class="panel"><h2>Paper Size — 3 inch thermal default</h2><div class="layoutrow" id="paperButtons"><button class="primary" data-paper="3 inch">3 inch</button><button data-paper="2 inch">2 inch</button><button data-paper="A4">A4</button></div></div>
+<div class="panel"><h2>Bluetooth Thermal Printer</h2><p>Status: <span class="pill" id="printerStatus">Not Connected</span></p><p class="muted">3-inch (80mm) thermal receipt printer. Direct Bluetooth printing depends on the printer Bluetooth profile: many portable printers use Classic Bluetooth SPP and need the printer maker app or a compatible Android print bridge.</p><div class="actions"><button class="primary" id="connectPrinter">Connect Printer</button><button id="testPrint">Test Print</button><button class="danger" id="disconnectPrinter">Disconnect</button></div><div class="err" id="btLastError"></div><p class="mono">Recommended: 3-inch / 80mm ESC/POS • 203 dpi • nominal 48 chars. Pair in Android Bluetooth settings first. If direct connection is unavailable, use Android Print / your printer app; this is a browser limitation, not a printer fault.</p></div></section>
+<section class="screen" id="screen-udhar"><div class="panel"><h2>👤 Customer Form</h2><div class="grid"><div><label>Name</label><input id="newCustName"></div><div><label>Mobile</label><input id="newCustMobile" inputmode="tel"></div></div><label>Address</label><input id="newCustAddress"><button class="primary" id="saveCustomer" style="margin-top:10px">Save Customer</button></div><div class="panel"><h2>Customers — by Mobile <span class="pill" id="customerCount">0</span></h2><p class="muted">Bills are grouped by normalized mobile number.</p><input id="customerSearch" placeholder="Search name / mobile"><div id="customersList"></div></div><div class="panel"><h2>Udhar List — <span id="udharCount">0</span> customers</h2><div id="udharList"></div></div></section>
+<section class="screen" id="screen-backup"><div class="panel"><h2>💾 BACKUP & RESTORE — 10 COLUMN EXCEL</h2><p class="muted">No. | Bill Number | Customer Name | Mobile | Date | Total | Item name | QTY | RATE | TOTAL</p><div class="actions"><button class="primary" id="backupJson">Backup Full App JSON</button><button class="good" id="backupCsv">Backup CSV (10 col)</button><button class="primary" id="backupExcel">Backup Excel (.xls)</button></div></div><div class="panel"><h2>Current Bills — Live Preview what will export</h2><div class="tablewrap"><table><thead><tr><th>No.</th><th>Bill No</th><th>Customer</th><th>Mobile</th><th>Date</th><th>Total</th><th>Item name</th><th>QTY</th><th>RATE</th><th>TOTAL</th></tr></thead><tbody id="exportPreview"></tbody></table></div></div><div class="panel"><h2>Restore from Excel/CSV/JSON</h2><label>Choose File Input (Excel/CSV/JSON)</label><input type="file" id="restoreFile" accept=".csv,.json,.xlsx,.xls"><p class="muted">CSV and JSON restore work offline. Excel (.xlsx) import needs a spreadsheet parser; export CSV and open it in Excel for the offline-safe route.</p><div id="restorePreview"></div><button class="primary" id="confirmRestore" disabled style="margin-top:10px">Confirm Restore</button><p class="mono">Bill Number present → new bill; blank Bill Number + Item name → continuation item. Old format “Name - 2 Qty x Rs250 = Rs500” is recognized.</p></div></section>
+</main><nav class="bottom" id="bottomnav"><button data-screen="create" class="active"><span>📦</span>CREATE</button><button data-screen="bills"><span>📄</span>BILLS</button><button data-screen="profit"><span>💰</span>PROFIT</button><button data-screen="receipt"><span>🧾</span>RECEIPT</button><button data-screen="settings"><span>⚙️</span>SETTINGS</button><button data-screen="udhar"><span>👤</span>UDHAR</button><button data-screen="backup"><span>💾</span>BACKUP</button></nav></div><div class="toast" id="toast"></div>
+<script>window.ACTSQrCode=(function(){const modules={'QR8bitByte.js':function(module,exports,req){
+var QRMode = req('QRMode.js');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+},'QRBitBuffer.js':function(module,exports,req){
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+},'QRErrorCorrectLevel.js':function(module,exports,req){
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+},'QRMaskPattern.js':function(module,exports,req){
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+},'QRMath.js':function(module,exports,req){
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+},'QRMode.js':function(module,exports,req){
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+},'QRPolynomial.js':function(module,exports,req){
+var QRMath = req('QRMath.js');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+},'QRRSBlock.js':function(module,exports,req){
+var QRErrorCorrectLevel = req('QRErrorCorrectLevel.js');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+},'QRUtil.js':function(module,exports,req){
+var QRMode = req('QRMode.js');
+var QRPolynomial = req('QRPolynomial.js');
+var QRMath = req('QRMath.js');
+var QRMaskPattern = req('QRMaskPattern.js');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+},'index.js':function(module,exports,req){
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = req('QR8bitByte.js');
+var QRUtil = req('QRUtil.js');
+var QRPolynomial = req('QRPolynomial.js');
+var QRRSBlock = req('QRRSBlock.js');
+var QRBitBuffer = req('QRBitBuffer.js');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+}};const cache={};function req(id){if(cache[id])return cache[id].exports;const m={exports:{}};cache[id]=m;if(!modules[id])throw new Error('QR module missing '+id);modules[id](m,m.exports,req);return m.exports}return req('index.js')})();</script>
+<script>
+(()=>{'use strict';const $=id=>document.getElementById(id);const safeGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};const safeSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Storage full or unavailable');return false}};let bills=safeGet('anmol_bills',[]).map(b=>({...b,items:Array.isArray(b.items)?b.items:[],paidAmount:Number(b.paidAmount)||0})),customers=safeGet('anmol_customer',[]),shop=safeGet('anmol_shop',{name:'ANMOL CHILDRENWEAR & TOY SHOP',address:'Doshihat, Kapad Bazar, Dholka - 382225',mobile:'9687393089',upi:'',upiName:''}),items=[],nextBill=Math.max(1001,...bills.map(b=>Number(b.number||1000)+1)),paymentMode='Cash',editingBill=null,profitFilter='Today',layout=1,paper='3 inch',cameraStream=null,scanFacing='environment',lastScanned='',lastScanAt=0,printerDevice=null,restoreCandidate=null;
+const money=n=>'₹'+Math.round(Number(n)||0).toLocaleString('en-IN');const dateStr=t=>new Date(t).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});const timeStr=t=>new Date(t).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});const fullDate=t=>dateStr(t)+' '+timeStr(t);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',3000)}function persist(){safeSet('anmol_bills',bills);safeSet('anmol_customer',customers)}function costCode(s){s=String(s||'').replace(/\D/g,'');if(s.length>=3&&s.length<=5)return Number(s.substring(1)||0);if(s.length===9)return Number(s.substring(3,6)||0);if(s.length===10)return Number(s.substring(3,6)||0);if(s.length===11)return Number(s.substring(3,7)||0);return 0}function total(){return items.reduce((s,i)=>s+i.qty*i.rate,0)}function codeTotal(arr=items){return arr.reduce((s,i)=>s+costCode(i.sku)*i.qty,0)}function discount(){return Math.max(0,Number($('discount').value)||0)}function grand(){return Math.max(0,total()-discount())}function profit(b){return (Number(b.grandTotal)||0)-(Number(b.totalCode)||0)}function paidAmount(b){return b.paid?Number(b.grandTotal)||0:Math.min(Number(b.grandTotal)||0,Math.max(0,Number(b.paidAmount)||0))}function outstanding(b){return Math.max(0,(Number(b.grandTotal)||0)-paidAmount(b))}function vibrate(){try{navigator.vibrate?.(200)}catch(e){}try{const C=window.AudioContext||window.webkitAudioContext;if(C){const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=440;g.gain.value=.3;o.connect(g);g.connect(c.destination);o.start();g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.25);o.stop(c.currentTime+.25)}}catch(e){}}
+function showScreen(name){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id==='screen-'+name));document.querySelectorAll('[data-screen]').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));if(name==='bills')renderBills();if(name==='profit')renderProfit();if(name==='receipt')renderReceipt();if(name==='udhar')renderCustomers();if(name==='backup')renderExport();}document.querySelectorAll('[data-screen]').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));const navNames=[['create','📦 CREATE'],['bills','📄 BILLS'],['profit','💰 PROFIT'],['receipt','🧾 RECEIPT'],['settings','⚙️ SETTINGS'],['udhar','👤 UDHAR'],['backup','💾 BACKUP']];navNames.forEach(([id,label])=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>showScreen(id);$('desktopnav').append(b)});$('quickNew').onclick=()=>{clearBill();showScreen('create')};if(safeGet('anmol_laptop_mode',false))document.body.classList.add('layout-laptop');$('laptopToggle').textContent=document.body.classList.contains('layout-laptop')?'💻 Laptop Mode ✓':'💻 Laptop Mode';$('laptopToggle').onclick=()=>{document.body.classList.toggle('layout-laptop');safeSet('anmol_laptop_mode',document.body.classList.contains('layout-laptop'));$('laptopToggle').textContent=document.body.classList.contains('layout-laptop')?'💻 Laptop Mode ✓':'💻 Laptop Mode'};
+function parseCode(raw){const p=String(raw||'').trim().split('/').map(x=>x.trim()).filter(Boolean);if(p.length>=3)return{name:p[0],sku:p[1].replace(/\D/g,''),rate:p[2].replace(/\D/g,'')};if(p.length===2)return{name:'',sku:p[0].replace(/\D/g,''),rate:p[1].replace(/\D/g,'')};return{name:'',sku:String(raw||'').replace(/\D/g,''),rate:''}}function addScanned(raw){const now=Date.now();if(!raw)return;if(raw===lastScanned&&now-lastScanAt<2000){toast('Duplicate scan ignored');return;}lastScanned=raw;lastScanAt=now;const p=parseCode(raw);if(p.name)$('itemName').value=p.name;if(p.sku)$('itemSku').value=p.sku;if(p.rate)$('itemRate').value=p.rate;$('manualScan').value='';$('scanStatus').textContent='Scanned';toast('Scanned: '+(p.name||p.sku||raw)+' - '+(p.rate||'rate?')+' → Closed');vibrate();stopScan();if(p.name&&p.sku&&p.rate)addItemFromForm()}
+function addItemFromForm(){const name=$('itemName').value.trim(),sku=$('itemSku').value.trim().replace(/\D/g,''),rate=Number($('itemRate').value),qty=Math.max(1,Number($('itemQty').value)||1);if(!name){toast('Enter item name');return}if(!Number.isFinite(rate)||rate<0){toast('Enter valid rate');return}items.push({name,sku,rate,qty});$('itemName').value='';$('itemSku').value='';$('itemRate').value='';$('itemQty').value=1;renderItems();persistDraft()}$('addItem').onclick=addItemFromForm;$('manualScanAdd').onclick=()=>addScanned($('manualScan').value);$('manualScan').addEventListener('keydown',e=>{if(e.key==='Enter')addScanned(e.target.value)});$('entryMinus').onclick=()=>$('itemQty').value=Math.max(1,(Number($('itemQty').value)||1)-1);$('entryPlus').onclick=()=>$('itemQty').value=(Number($('itemQty').value)||1)+1;$('itemSku').oninput=()=>{$('itemSku').value=$('itemSku').value.replace(/\D/g,'');$('helperSku').textContent=$('itemSku').value||'—'};$('itemQty').oninput=()=>{$('helperQty').textContent=$('itemQty').value||1};$('discount').oninput=()=>{safeSet('anmol_discount',$('discount').value);renderItems()};$('customerName').value=safeGet('anmol_draft_customer','');$('customerName').oninput=()=>safeSet('anmol_draft_customer',$('customerName').value);$('customerMobile').oninput=()=>safeSet('anmol_draft_mobile',$('customerMobile').value);$('customerMobile').value=safeGet('anmol_draft_mobile','');$('payModes').querySelectorAll('button').forEach(b=>b.onclick=()=>{paymentMode=b.dataset.mode;$('payModes').querySelectorAll('button').forEach(x=>x.className=x===b?'primary':'')});
+function renderItems(){const body=$('billItems');body.innerHTML=items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.name)}<div class="muted">SKU ${esc(it.sku||'—')}</div></td><td><div class="qty"><button class="small" data-act="minus" data-i="${i}">−</button><b>${it.qty}</b><button class="small" data-act="plus" data-i="${i}">＋</button></div></td><td><input type="number" min="0" value="${it.rate}" data-act="rate" data-i="${i}"></td><td>${money(it.qty*it.rate)}</td><td><button class="danger small" data-act="delete" data-i="${i}">✕</button></td></tr>`).join('');body.querySelectorAll('[data-act]').forEach(b=>b.onchange=b.onclick=e=>{const i=Number(b.dataset.i),a=b.dataset.act;if(a==='minus')items[i].qty=Math.max(1,items[i].qty-1);if(a==='plus')items[i].qty++;if(a==='delete')items.splice(i,1);if(a==='rate')items[i].rate=Math.max(0,Number(b.value)||0);renderItems();persistDraft()});$('itemCount').textContent=items.length+' items';$('grandTotal').textContent=money(grand());$('totalCode').textContent=money(codeTotal());$('billProfit').textContent=money(grand()-codeTotal());$('helperSku').textContent=$('itemSku').value||'—';$('helperQty').textContent=$('itemQty').value||1}
+function persistDraft(){safeSet('anmol_bill_draft',{items,customerName:$('customerName').value,customerMobile:$('customerMobile').value,discount:$('discount').value,paymentMode,paid:$('paidCheck').checked})}function clearBill(){items=[];editingBill=null;$('customerName').value='';$('customerMobile').value='';$('discount').value='0';$('paidCheck').checked=true;$('itemQty').value=1;paymentMode='Cash';$('payModes').querySelectorAll('button').forEach((b,i)=>b.className=i===0?'primary':'');renderItems();safeSet('anmol_bill_draft',{})}$('clearBill').onclick=clearBill;
+$('saveBill').onclick=()=>{if(!items.length){toast('Add at least one item');return}const now=Date.now(),g=grand(),tc=codeTotal();const b={id:editingBill||'b'+now,number:editingBill?(bills.find(x=>x.id===editingBill)?.number||nextBill):nextBill++,timestamp:now,customerName:$('customerName').value.trim()||'Walk-in',mobile:$('customerMobile').value.trim(),items:items.map(x=>({...x})),subtotal:total(),discount:discount(),grandTotal:g,totalCode:tc,profit:g-tc,paymentMode,paid:$('paidCheck').checked,paidAmount:$('paidCheck').checked?g:(editingBill?Math.min(g,Number(bills.find(x=>x.id===editingBill)?.paidAmount)||0):0),returns:editingBill?(bills.find(x=>x.id===editingBill)?.returns||[]):[]};if(editingBill){bills=bills.map(x=>x.id===editingBill?{...b, timestamp:x.timestamp}:x)}else bills.push(b);const mob=b.mobile.replace(/\D/g,'');if(mob&&b.customerName!=='Walk-in'&&!customers.some(c=>c.mobile.replace(/\D/g,'')===mob))customers.push({name:b.customerName,mobile:b.mobile,address:''});persist();safeSet('anmol_customer',customers);clearBill();renderBills();renderProfit();renderCustomers();renderExport();toast('Bill #'+b.number+' saved');showScreen('bills')};
+function renderBills(){const q=$('billSearch').value.toLowerCase();const list=[...bills].sort((a,b)=>b.timestamp-a.timestamp).filter(b=>[b.number,b.customerName,b.mobile].join(' ').toLowerCase().includes(q));$('billCount').textContent=list.length;$('billsList').innerHTML=list.map(b=>`<article class="billcard"><div class="billhead"><div><b>Bill #${b.number}</b> • ${fullDate(b.timestamp)}<div><b>${esc(b.customerName||'Walk-in')}</b> • ${esc(b.mobile||'—')}</div><div class="muted">${b.items.length} item(s) • ${esc(b.paymentMode)} • <span style="color:${b.paid?'#168653':'#c53c45'}">${b.paid?'Paid':('Due '+money(outstanding(b)))}</span></div></div><strong>${money(b.grandTotal)}</strong></div><div class="tablewrap"><table><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>${b.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty}</td><td>${money(i.rate)}</td><td>${money(i.qty*i.rate)}</td></tr>`).join('')}</tbody></table></div><div class="muted">Code ${money(b.totalCode)} • Profit ${money(profit(b))}</div><div class="actions"><button class="small" data-bact="edit" data-id="${b.id}">Edit</button><button class="danger small" data-bact="delete" data-id="${b.id}">Delete</button><button class="small" data-bact="share" data-id="${b.id}">Share</button><button class="small" data-bact="receipt" data-id="${b.id}">Receipt</button><button class="small" data-bact="return" data-id="${b.id}">Return</button><button class="small" data-bact="print" data-id="${b.id}">Bluetooth Print</button><button class="small" data-bact="wa" data-id="${b.id}">WhatsApp</button><button class="small" data-bact="pdf" data-id="${b.id}">PDF</button></div></article>`).join('')||'<p class="muted">No bills found.</p>'; $('billsList').querySelectorAll('[data-bact]').forEach(btn=>btn.onclick=()=>billAction(btn.dataset.bact,btn.dataset.id))} $('billSearch').oninput=renderBills;
+function billAction(act,id){const b=bills.find(x=>x.id===id);if(!b)return;if(act==='delete'){if(confirm('Delete bill #'+b.number+'?')){bills=bills.filter(x=>x.id!==id);persist();renderBills();renderProfit();renderCustomers();renderExport();toast('Bill deleted')}}if(act==='edit'){items=b.items.map(x=>({...x}));editingBill=id;$('customerName').value=b.customerName==='Walk-in'?'':b.customerName;$('customerMobile').value=b.mobile;$('discount').value=b.discount||0;$('paidCheck').checked=b.paid;paymentMode=b.paymentMode||'Cash';renderItems();showScreen('create')}if(act==='share'){const text=billText(b);if(navigator.share)navigator.share({title:'Bill #'+b.number,text}).catch(()=>{});else{copyText(text);toast('Bill text copied')}}if(act==='receipt'){receiptBill=b;showScreen('receipt');renderReceipt()}if(act==='return'){const reason=prompt('Return reason (damage, size, etc.)');if(reason===null)return;const itemName=prompt('Item name to return: '+b.items.map(x=>x.name).join(', '));if(!itemName)return;const it=b.items.find(x=>x.name.toLowerCase()===itemName.toLowerCase());if(!it){toast('Item not found');return}const q=Math.max(1,Number(prompt('Return quantity',1))||1);if(q>it.qty){toast('Return qty exceeds sold qty');return}it.qty-=q;if(it.qty===0)b.items=b.items.filter(x=>x!==it);b.returns=b.returns||[];b.returns.push({reason,itemName,qty:q,timestamp:Date.now()});b.subtotal=b.items.reduce((s,x)=>s+x.qty*x.rate,0);b.totalCode=codeTotal(b.items);b.grandTotal=Math.max(0,b.subtotal-(b.discount||0));b.paidAmount=Math.min(Number(b.paidAmount)||0,b.grandTotal);b.paid=paidAmount(b)>=b.grandTotal&&b.grandTotal>0;b.profit=profit(b);persist();renderBills();renderProfit();toast('Return saved')}if(act==='wa'){const digits=(b.mobile||'').replace(/\D/g,'');if(!digits){toast('Customer mobile number missing');return}const waNumber=digits.length===10?'91'+digits:digits;const url='https://wa.me/'+waNumber+'?text='+encodeURIComponent(billText(b));window.open(url,'_blank')}if(act==='pdf'){receiptBill=b;showScreen('receipt');renderReceipt();setTimeout(()=>window.print(),300)}if(act==='print'){receiptBill=b;showScreen('receipt');renderReceipt();if(printerDevice)printBluetooth(b);else{toast('Use Print / Save PDF or your Android printer app');setTimeout(()=>window.print(),250)}}}function billText(b){return `${shop.name}\nBill #${b.number} • ${fullDate(b.timestamp)}\nCustomer: ${b.customerName}\nMobile: ${b.mobile||'—'}\n`+b.items.map(i=>`${i.name} ×${i.qty} @ ₹${i.rate} = ₹${i.qty*i.rate}`).join('\n')+`\nGrand Total: ₹${b.grandTotal}\n${b.paid?'PAID':'UNPAID'}`}
+function renderProfit(){const last=[...bills].sort((a,b)=>b.timestamp-a.timestamp)[0];$('lastBillStat').textContent=last?'#'+last.number:'—';$('lastBillSales').textContent='Sales '+money(last?.grandTotal||0);const now=new Date(),filtered=bills.filter(b=>profitFilter==='All'||(profitFilter==='Today'&&new Date(b.timestamp).toDateString()===now.toDateString())||(profitFilter==='Month'&&new Date(b.timestamp).getMonth()===now.getMonth()&&new Date(b.timestamp).getFullYear()===now.getFullYear()));$('allProfit').textContent=money(filtered.reduce((s,b)=>s+profit(b),0));$('profitCaption').textContent=profitFilter+' bills';$('profitExample').textContent=last?`${last.items.map(i=>`${i.rate} × ${i.qty} = ${i.rate*i.qty}`).join(' • ')} | Total Code ${money(last.totalCode)} | Profit ${money(profit(last))}`:'Profit = Grand Total − Total Code';$('profitBills').innerHTML=[...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(b=>`<div class="billcard"><div class="billhead"><div><b>Bill #${b.number}</b><div class="muted">${dateStr(b.timestamp)} • ${esc(b.customerName)}</div></div><div><b>${money(b.grandTotal)}</b><div class="muted">Profit ${money(profit(b))}</div></div></div></div>`).join('')||'<p class="muted">No bills in this period.</p>'} $('profitFilters').querySelectorAll('button').forEach(b=>b.onclick=()=>{profitFilter=b.dataset.filter;$('profitFilters').querySelectorAll('button').forEach(x=>x.className=x===b?'primary':'');renderProfit()});
+let receiptBill=null;function upiPayload(b){return 'upi://pay?pa='+encodeURIComponent(shop.upi||'')+'&pn='+encodeURIComponent(shop.upiName||shop.name||'ANMOL CHILDRENWEAR')+'&am='+encodeURIComponent((Number(b.grandTotal)||0).toFixed(2))+'&cu=INR'}function drawQr(ctx,text,w,h){if(!window.ACTSQrCode)throw new Error('QR engine unavailable');const qr=new window.ACTSQrCode(0,0);qr.addData(text);qr.make();const n=qr.getModuleCount(),scale=Math.floor(Math.min(w,h)/(n+8)),size=scale*(n+8),ox=Math.floor((w-size)/2),oy=Math.floor((h-size)/2);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.fillStyle='#000';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))ctx.fillRect(ox+(c+4)*scale,oy+(r+4)*scale,scale,scale)}function selectedReceiptBill(){return receiptBill||[...bills].sort((a,b)=>b.timestamp-a.timestamp)[0]||{number:'—',timestamp:Date.now(),customerName:$('customerName').value||'Walk-in',mobile:$('customerMobile').value,items,grandTotal:grand(),totalCode:codeTotal(),paid:$('paidCheck').checked,paymentMode,discount:discount()}}function renderReceipt(){const b=selectedReceiptBill(),show=id=>$(id).checked;let rows=(b.items||[]).map((i,n)=>`<tr><td>${n+1}</td><td>${esc(i.name)}</td><td>${i.qty}</td><td>${i.rate}</td><td>${i.qty*i.rate}</td></tr>`).join('');$('receiptPreview').dataset.layout=String(layout);$('receiptPreview').innerHTML=`${show('showLogo')?'<h2>ACTS</h2>':''}<h2>${esc(shop.name)}</h2><p style="text-align:center">${esc(shop.address)}</p><p style="text-align:center">${esc(shop.mobile)}</p><hr>${show('showBillNo')?`<p>Bill No: ${b.number}</p>`:''}${show('showDate')?`<p>Date: ${fullDate(b.timestamp)}</p>`:''}${show('showCustomer')?`<p>Customer: ${esc(b.customerName||'Walk-in')}</p>`:''}${show('showMobile')?`<p>Mobile: ${esc(b.mobile||'—')}</p>`:''}<table><thead><tr><th>No.</th><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><div class="grand">TOTAL ${money(b.grandTotal)}</div><div class="tiny">Total Code: ${money(b.totalCode)}<br>Profit: ${money(profit(b))}</div>${show('showQR')?`<div class="qrWrap"><b>SCAN TO PAY</b><canvas id="upiQrCanvas" class="upiQr" width=260 height=260></canvas><small>${esc(shop.upi||'Add UPI ID in Settings')} • ${money(b.grandTotal)}</small></div>`:''}<p style="text-align:center;margin-top:18px">${esc($('thankYou').value)}</p>`;const active= $('layoutButtons').querySelectorAll('button');active.forEach((x,i)=>x.className=i+1===layout?'primary':'');const q=$('upiQrCanvas');if(q&&shop.upi){try{drawQr(q.getContext('2d'),upiPayload(b),q.width, q.height)}catch(e){q.style.display='none';}}else if(q){q.style.display='none';}}for(let i=1;i<=10;i++){const b=document.createElement('button');b.textContent=i;b.onclick=()=>{layout=i;renderReceipt()};$('layoutButtons').append(b)}['showBillNo','showDate','showCustomer','showMobile','showQR','showLogo','thankYou','receiptPaper'].forEach(id=>$(id).addEventListener('change',renderReceipt));
+function receiptCanvas(){const b=selectedReceiptBill(),w=$('receiptPaper').value==='2 inch'?384:600,rowH=36,h=650+(b.items?.length||0)*rowH,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const c=canvas.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle='#000';c.textAlign='center';c.font='900 30px Arial';if($('showLogo').checked){c.fillText('ACTS',w/2,35)}c.font='900 22px Arial';c.fillText(shop.name.slice(0,38),w/2,70);c.font='bold 15px Arial';c.fillText(shop.address.slice(0,48),w/2,96);c.fillText(shop.mobile||'',w/2,118);c.textAlign='left';let y=150;if($('showBillNo').checked){c.fillText('Bill No: '+b.number,10,y);y+=23}if($('showDate').checked){c.fillText('Date: '+fullDate(b.timestamp),10,y);y+=23}if($('showCustomer').checked){c.fillText('Customer: '+(b.customerName||'Walk-in').slice(0,30),10,y);y+=23}if($('showMobile').checked){c.fillText('Mobile: '+(b.mobile||'—'),10,y);y+=23}y+=12;c.font='900 14px Arial';c.fillText('No.  Item                 Qty  Rate  Total',10,y);y+=10;c.beginPath();c.moveTo(8,y);c.lineTo(w-8,y);c.strokeStyle='#000';c.stroke();y+=24;c.font='bold 14px Arial';(b.items||[]).forEach((it,i)=>{c.fillText(String(i+1),10,y);c.fillText(it.name.slice(0,20),45,y);c.textAlign='right';c.fillText(String(it.qty),w-150,y);c.fillText(String(it.rate),w-82,y);c.fillText(String(it.qty*it.rate),w-10,y);c.textAlign='left';y+=rowH-10});y+=10;c.font='900 23px Arial';c.textAlign='right';c.fillText('TOTAL '+money(b.grandTotal),w-10,y);y+=32;c.font='bold 14px Arial';c.fillText('Total Code: '+money(b.totalCode),w-10,y);y+=22;c.fillText('Profit: '+money(profit(b)),w-10,y);y+=12;if($('showQR').checked&&shop.upi){const q=window.ACTSQrCode?new window.ACTSQrCode(0,0):null;if(q){q.addData(upiPayload(b));q.make();const n=q.getModuleCount(),sz=130,scale=Math.floor(sz/(n+8)),actual=scale*(n+8),qx=(w-actual)/2,qy=y; c.fillStyle='#fff';c.fillRect(qx,qy,actual,actual);c.fillStyle='#000';for(let r=0;r<n;r++)for(let col=0;col<n;col++)if(q.isDark(r,col))c.fillRect(qx+(col+4)*scale,qy+(r+4)*scale,scale,scale);y+=actual+22;c.textAlign='center';c.font='bold 12px Arial';c.fillText('SCAN TO PAY',w/2,y);y+=20;}}c.textAlign='center';c.font='900 18px Arial';c.fillText($('thankYou').value,w/2,y);return canvas}function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}$('downloadPng').onclick=()=>receiptCanvas().toBlob(b=>downloadBlob(b,'ACTS_Receipt_'+selectedReceiptBill().number+'.png'));$('downloadPdf').onclick=()=>window.print();$('receiptShare').onclick=()=>{const b=selectedReceiptBill(),text=billText(b);if(navigator.share)navigator.share({title:'ACTS Receipt',text}).catch(()=>{});else{copyText(text);toast('Receipt text copied')}};$('receiptWhatsApp').onclick=()=>{const b=selectedReceiptBill();window.open('https://wa.me/'+((b.mobile||'').replace(/\D/g,'').length===10?'91':'')+(b.mobile||'').replace(/\D/g,'')+'?text='+encodeURIComponent(billText(b)),'_blank')};
+function renderCustomers(){const q=$('customerSearch').value.toLowerCase(),map=new Map();bills.forEach(b=>{const mob=(b.mobile||'').replace(/\D/g,'')||'walkin-'+b.customerName;let x=map.get(mob)||{name:b.customerName||'Walk-in',mobile:b.mobile||'',bills:[],totalSpent:0,udhar:0};x.bills.push(b);x.totalSpent+=Number(b.grandTotal)||0;x.udhar+=outstanding(b);map.set(mob,x)});customers.forEach(c=>{const mob=(c.mobile||'').replace(/\D/g,'');if(mob&&!map.has(mob))map.set(mob,{...c,bills:[],totalSpent:0,udhar:0})});const arr=[...map.values()].filter(c=>(c.name+' '+c.mobile).toLowerCase().includes(q));$('customerCount').textContent=arr.length;$('customersList').innerHTML=arr.map((c,i)=>`<details class="billcard"><summary><b>${esc(c.name)}</b> • ${c.bills.length} bills • ${money(c.totalSpent)}<div class="muted">Last ${c.bills.length?dateStr(Math.max(...c.bills.map(b=>b.timestamp))):'—'} • ${esc(c.mobile||'—')} • Udhar ${money(c.udhar)}</div></summary><div>${c.bills.map(b=>`<p>Bill #${b.number} • ${dateStr(b.timestamp)} • ${money(b.grandTotal)} • ${b.paid?'Paid':('Due '+money(outstanding(b)))}</p>`).join('')||'<p class="muted">No bills yet</p>'}<div class="actions"><button class="small" data-cact="rescue" data-mobile="${esc(c.mobile)}">Bills rescue by mobile</button><button class="small" data-cact="remind" data-mobile="${esc(c.mobile)}" data-name="${esc(c.name)}">WhatsApp Reminder</button><button class="small" data-cact="paid" data-mobile="${esc(c.mobile)}">Paid</button><button class="small" data-cact="payment" data-mobile="${esc(c.mobile)}">Add Payment</button><button class="small" data-cact="call" data-mobile="${esc(c.mobile)}">Call</button></div></div></details>`).join('')||'<p class="muted">No customers found.</p>';const ud=arr.filter(c=>c.udhar>0);$('udharCount').textContent=ud.length;$('udharList').innerHTML=ud.map(c=>`<div class="billcard"><b>${esc(c.name)}</b> • ${esc(c.mobile)}<div>Udhar: <strong>${money(c.udhar)}</strong></div><label>Payment amount</label><input type="number" min="0" id="pay-${esc((c.mobile||'walkin').replace(/\W/g,''))}" placeholder="Amount"><label>Reason</label><input id="reason-${esc((c.mobile||'walkin').replace(/\W/g,''))}" placeholder="Payment reason"><label>Payment mode</label><select id="mode-${esc((c.mobile||'walkin').replace(/\W/g,''))}"><option>Cash</option><option>UPI</option></select><button class="good small" data-cact="payment" data-mobile="${esc(c.mobile)}">Add Payment</button></div>`).join('')||'<p class="muted">No udhar customers.</p>';document.querySelectorAll('[data-cact]').forEach(btn=>btn.onclick=()=>{const act=btn.dataset.cact,m=btn.dataset.mobile||'';if(act==='call')location.href='tel:'+m;if(act==='remind'){window.open('https://wa.me/91'+m.replace(/\D/g,'')+'?text='+encodeURIComponent('Hello '+(btn.dataset.name||'')+', your payment is pending at '+shop.name+'.'),'_blank')}if(act==='rescue'){ $('customerSearch').value=m;renderCustomers();toast('Filtered customer bills')}if(act==='paid'){if(confirm('Mark all bills for '+m+' as paid?')){bills.forEach(b=>{if((b.mobile||'').replace(/\D/g,'')===m.replace(/\D/g,'')){b.paid=true;b.paidAmount=Number(b.grandTotal)||0}});persist();renderCustomers();renderBills()}}if(act==='payment'){const safeId=(m||'walkin').replace(/\W/g,'');const input=$('pay-'+safeId);const amount=Number(input?.value||prompt('Payment amount (₹)'));if(!amount||amount<=0)return;const reason=$('reason-'+safeId)?.value||'Payment';const mode=$('mode-'+safeId)?.value||'Cash';let remaining=amount;bills.filter(b=>(b.mobile||'').replace(/\D/g,'')===m.replace(/\D/g,'')&&outstanding(b)>0).sort((a,b)=>a.timestamp-b.timestamp).forEach(b=>{if(remaining<=0)return;const due=outstanding(b),take=Math.min(remaining,due);b.paidAmount=paidAmount(b)+take;remaining-=take;b.paid=outstanding(b)<=0.009});const logs=safeGet('anmol_payment_log',[]);logs.push({mobile:m,amount,reason,mode,timestamp:Date.now()});safeSet('anmol_payment_log',logs);persist();renderCustomers();renderBills();toast('Payment recorded against outstanding bills')}})}$('customerSearch').oninput=renderCustomers;$('saveCustomer').onclick=()=>{const name=$('newCustName').value.trim(),mobile=$('newCustMobile').value.trim();if(!name){toast('Enter customer name');return}const digits=mobile.replace(/\D/g,'');const existing=customers.find(c=>c.mobile.replace(/\D/g,'')===digits);if(existing)Object.assign(existing,{name,mobile,address:$('newCustAddress').value});else customers.push({name,mobile,address:$('newCustAddress').value});safeSet('anmol_customer',customers);$('newCustName').value=$('newCustMobile').value=$('newCustAddress').value='';renderCustomers();toast('Customer saved')};
+function exportRows(){const rows=[['No.','Bill Number','Customer Name','Mobile','Date','Total','Item name','QTY','RATE','TOTAL']];let n=1;[...bills].sort((a,b)=>a.timestamp-b.timestamp).forEach((b,bi)=>{b.items.forEach((it,ii)=>{rows.push([ii===0?n++:'',ii===0?b.number:'',ii===0?b.customerName:'',ii===0?b.mobile:'',ii===0?fullDate(b.timestamp):'',ii===0?b.grandTotal:'',it.name,it.qty,it.rate,it.qty*it.rate])});if(bi<bills.length-1)rows.push(['','','','','','','','','',''])});return rows}function renderExport(){const rows=exportRows();$('exportPreview').innerHTML=rows.slice(1,61).map(r=>`<tr>${r.map((v,i)=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('');}function csvString(rows){return rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n')}$('backupCsv').onclick=()=>downloadBlob(new Blob(['\ufeff'+csvString(exportRows())],{type:'text/csv;charset=utf-8'}),'Anmol_Backup_'+new Date().toISOString().slice(0,10)+'.csv');$('backupExcel').onclick=()=>{const rows=exportRows();const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><table>'+rows.map((r,ri)=>'<tr>'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table></body></html>';downloadBlob(new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'}),'Anmol_Backup_'+new Date().toISOString().slice(0,10)+'.xls')};$('backupJson').onclick=()=>downloadBlob(new Blob([JSON.stringify({version:2,shop,bills,customers,paymentLog:safeGet('anmol_payment_log',[]),exportedAt:Date.now()},null,2)],{type:'application/json'}),'anmol_backup_'+Date.now()+'.json');async function parseXlsxBuffer(buffer){if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot open .xlsx offline. Save it as CSV and restore that file.');const u=new Uint8Array(buffer),v=new DataView(buffer),decoder=new TextDecoder();let eocd=-1;for(let i=u.length-22;i>=Math.max(0,u.length-65557);i--){if(v.getUint32(i,true)===0x06054b50){eocd=i;break}}if(eocd<0)throw new Error('Invalid XLSX file (ZIP header missing).');const count=v.getUint16(eocd+10,true),dir=v.getUint32(eocd+16,true),files={};let off=dir;for(let n=0;n<count;n++){if(v.getUint32(off,true)!==0x02014b50)break;const method=v.getUint16(off+10,true),csize=v.getUint32(off+20,true),nlen=v.getUint16(off+28,true),elen=v.getUint16(off+30,true),clen=v.getUint16(off+32,true),lo=v.getUint32(off+42,true),name=decoder.decode(u.slice(off+46,off+46+nlen));const lnl=v.getUint16(lo+26,true),lel=v.getUint16(lo+28,true),start=lo+30+lnl+lel,packed=u.slice(start,start+csize);let bytes;if(method===0)bytes=packed;else if(method===8){const stream=new Blob([packed]).stream().pipeThrough(new DecompressionStream('deflate-raw'));bytes=new Uint8Array(await new Response(stream).arrayBuffer())}else throw new Error('Unsupported XLSX compression method.');files[name]=decoder.decode(bytes);off+=46+nlen+elen+clen}const xml=(name)=>files[name]?new DOMParser().parseFromString(files[name],'application/xml'):null;const sx=xml('xl/sharedStrings.xml'),shared=sx?[...sx.getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join('')):[];const sheetName=Object.keys(files).filter(k=>/^xl\/worksheets\/sheet[0-9]+\.xml$/.test(k)).sort()[0];if(!sheetName)throw new Error('No worksheet found in XLSX.');const doc=xml(sheetName),rows=[];const colIndex=ref=>{let n=0;for(const ch of (ref.match(/^[A-Z]+/)||['A'])[0])n=n*26+ch.charCodeAt(0)-64;return n-1};for(const row of [...doc.getElementsByTagName('row')]){const cells=[];for(const c of [...row.getElementsByTagName('c')]){const idx=colIndex(c.getAttribute('r')||'A1'),type=c.getAttribute('t'),val=c.getElementsByTagName('v')[0]?.textContent||'';let value=type==='s'?(shared[Number(val)]||''):type==='inlineStr'?[...c.getElementsByTagName('t')].map(t=>t.textContent).join(''):val;cells[idx]=value}rows.push(cells.map(x=>x??''))}return csvRowsToBills(rows)}$('restoreFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{let parsed;const lower=f.name.toLowerCase();if(lower.endsWith('.xlsx')){parsed=await parseXlsxBuffer(await f.arrayBuffer())}else{const text=await f.text();if(lower.endsWith('.json')){const j=JSON.parse(text);parsed=Array.isArray(j)?j:(j.bills||[]);if(!Array.isArray(j)&&j.shop){shop=j.shop;safeSet('anmol_shop',shop);if(Array.isArray(j.customers)){customers=j.customers;safeSet('anmol_customer',customers)}if(Array.isArray(j.paymentLog))safeSet('anmol_payment_log',j.paymentLog)}}else if(f.name.toLowerCase().endsWith('.csv')){const lines=text.replace(/^\ufeff/,'').split(/\r?\n/).filter(x=>x.trim());parsed=csvToBills(lines)}else if(f.name.toLowerCase().endsWith('.xls')){const doc=new DOMParser().parseFromString(text,'text/html');const rows=[...doc.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('td,th')].map(td=>td.textContent.trim()));parsed=rows.length?csvRowsToBills(rows):[];}else{throw new Error('Supported files: .xlsx, .xls exported by ACTS, CSV, or ACTS JSON.')}} restoreCandidate=parsed;$('restorePreview').innerHTML=`<p>Restore Preview — <b>${parsed.length}</b> bills</p>`;$('confirmRestore').disabled=!parsed.length}catch(err){$('restorePreview').innerHTML='<p class="err">'+esc(err.message)+'</p>';restoreCandidate=null;$('confirmRestore').disabled=true}};$('confirmRestore').onclick=()=>{if(!restoreCandidate)return;if(!confirm('Restore '+restoreCandidate.length+' bills? Existing bills will be replaced.'))return;bills=restoreCandidate;nextBill=Math.max(1001,...bills.map(b=>Number(b.number||1000)+1));persist();renderBills();renderProfit();renderCustomers();renderExport();toast('Bills restored: '+bills.length);restoreCandidate=null;$('confirmRestore').disabled=true};function csvParseLine(line){const out=[];let cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&q){cur+='"';i++}else if(c==='"')q=!q;else if(c===','&&!q){out.push(cur);cur=''}else cur+=c}out.push(cur);return out}function csvToBills(lines){return csvRowsToBills(lines.map(csvParseLine))}function csvRowsToBills(rows){const hdr=(rows.shift()||[]).map(x=>String(x).toLowerCase().trim());let groups=[],current=null;for(const r of rows){const get=(name,idx)=>r[hdr.indexOf(name)]??r[idx]??'';const no=get('bill number',1),name=get('item name',6),qty=Number(get('qty',7))||1,rate=Number(get('rate',8))||0,tot=Number(get('total',9))||qty*rate;if(!no&&!name)continue;if(no){current={id:'r'+Date.now()+Math.random(),number:Number(no)||1001,timestamp:Date.now(),customerName:get('customer name',2)||'Walk-in',mobile:get('mobile',3),grandTotal:Number(get('total',5))||tot,totalCode:0,discount:0,paymentMode:'Cash',paid:false,items:[],returns:[]};groups.push(current)}if(!current)continue;let nm=name,qq=qty,rr=rate,tt=tot;const old=String(name).match(/^(.*?)\s*-\s*(\d+)\s*Qty\s*x\s*Rs\s*(\d+)\s*=\s*Rs\s*(\d+)/i);if(old){nm=old[1];qq=Number(old[2]);rr=Number(old[3]);tt=Number(old[4])}if(nm){current.items.push({name:nm,sku:'',qty:qq,rate:rr});current.grandTotal=Number(current.grandTotal)||tt;current.totalCode+=0}}groups.forEach(b=>{b.subtotal=b.items.reduce((s,i)=>s+i.qty*i.rate,0);b.totalCode=codeTotal(b.items);if(!b.grandTotal)b.grandTotal=b.subtotal;b.profit=profit(b)});return groups}
+function loadShop(){ $('shopName').value=shop.name||'';$('shopAddress').value=shop.address||'';$('shopMobile').value=shop.mobile||'';$('shopUpi').value=shop.upi||'';$('shopUpiName').value=shop.upiName||''} $('saveShop').onclick=()=>{shop={name:$('shopName').value.trim(),address:$('shopAddress').value.trim(),mobile:$('shopMobile').value.trim(),upi:$('shopUpi').value.trim(),upiName:$('shopUpiName').value.trim()};safeSet('anmol_shop',shop);renderReceipt();toast('Shop details saved')};$('paperButtons').querySelectorAll('button').forEach(b=>b.onclick=()=>{paper=b.dataset.paper;$('receiptPaper').value=paper==='3 inch'?'3 inch thermal':paper;$('paperButtons').querySelectorAll('button').forEach(x=>x.className=x===b?'primary':'');toast('Paper size: '+paper)});
+async function startScan(){if(!navigator.mediaDevices?.getUserMedia){toast('Camera not supported. Use manual SKU input.');return}try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:scanFacing},audio:false});$('video').srcObject=cameraStream;$('video').classList.remove('hidden');$('cameraText').classList.add('hidden');await $('video').play();$('scanStatus').textContent='Loading scanner…';if('BarcodeDetector'in window){let detector;try{detector=new BarcodeDetector({formats:['qr_code','code_128','ean_13','ean_8','upc_a','upc_e']})}catch(e){detector=new BarcodeDetector()}scanLoop(detector)}else{$('scanStatus').textContent='Scanner unavailable';$('cameraText').classList.remove('hidden');$('cameraText').innerHTML='Camera is on, but QR decoding is unavailable in this browser.<br><small>Use Manual SKU or try a supported Chrome version.</small>'}}catch(e){$('btLastError').textContent='';toast('Camera permission failed: '+e.message)}}let scanLoopBusy=false;async function scanLoop(detector){if(!cameraStream)return;try{if(!scanLoopBusy&&$('video').readyState>=2){scanLoopBusy=true;const codes=await detector.detect($('video'));scanLoopBusy=false;if(codes.length){addScanned(codes[0].rawValue);return}}}catch(e){scanLoopBusy=false}if(cameraStream)requestAnimationFrame(()=>scanLoop(detector))}function stopScan(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}$('video').classList.add('hidden');$('cameraText').classList.remove('hidden');$('cameraText').innerHTML='Camera off<br><small>Scan QR / barcode or enter SKU manually</small>';$('scanStatus').textContent='Scanner ready / manual fallback'}$('scanBtn').onclick=startScan;$('stopBtn').onclick=stopScan;$('rearBtn').onclick=()=>{scanFacing='environment';stopScan();startScan()};$('frontBtn').onclick=()=>{scanFacing='user';stopScan();startScan()};$('flipBtn').onclick=()=>{scanFacing=scanFacing==='environment'?'user':'environment';stopScan();startScan()};$('flashBtn').onclick=async()=>{try{const track=cameraStream?.getVideoTracks()[0];if(!track){toast('Start camera first');return}const caps=track.getCapabilities();if(!caps.torch){toast('Flash not supported on this camera');return}const on=!(track.getSettings().torch);await track.applyConstraints({advanced:[{torch:on}]});toast('Flash '+(on?'on':'off'))}catch(e){toast('Flash unavailable')}};window.startScan=startScan;$('qrImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!('BarcodeDetector'in window)){toast('Image QR scan unsupported in this browser; use live scan or manual input.');return}try{const bmp=await createImageBitmap(f),det=new BarcodeDetector({formats:['qr_code']});const codes=await det.detect(bmp);if(codes.length)addScanned(codes[0].rawValue);else toast('No QR found in image')}catch(err){toast('Could not scan image')}};
+function copyText(t){if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).catch(()=>{});else{const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();document.execCommand('copy');x.remove()}}async function printBluetooth(b){if(!printerDevice){toast('Connect printer first');return}try{const server=await printerDevice.gatt.connect();const services=await server.getPrimaryServices();let char=null;for(const s of services){for(const c of await s.getCharacteristics()){if(c.properties.write||c.properties.writeWithoutResponse){char=c;break}}if(char)break}if(!char)throw new Error('No writable BLE characteristic. Classic Bluetooth SPP printers are not supported by Web Bluetooth.');const enc=new TextEncoder();const payload='\x1b@\n'+shop.name+'\n'+shop.address+'\nBill #'+b.number+'\n'+b.items.map(i=>i.name+' x'+i.qty+' '+i.rate+' '+(i.qty*i.rate)).join('\n')+'\nTOTAL '+b.grandTotal+'\n\n\n';const bytes=enc.encode(payload);for(let i=0;i<bytes.length;i+=180)await char.writeValue(bytes.slice(i,i+180));toast('Print data sent')}catch(e){$('btLastError').textContent=e.message;toast('Printer error: '+e.message)}}$('connectPrinter').onclick=async()=>{try{if(!navigator.bluetooth)throw new Error('Web Bluetooth not available. Use supported Chrome on Android and a compatible BLE printer.');printerDevice=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['0000ff00-0000-1000-8000-00805f9b34fb','000018f0-0000-1000-8000-00805f9b34fb','0000ffe0-0000-1000-8000-00805f9b34fb']});$('printerStatus').textContent='Selected: '+printerDevice.name;toast('Printer selected; write service support must be verified')}catch(e){$('btLastError').textContent=e.message;toast('Printer connection not completed')}};$('disconnectPrinter').onclick=()=>{try{if(printerDevice?.gatt?.connected)printerDevice.gatt.disconnect()}catch(e){}printerDevice=null;$('printerStatus').textContent='Not Connected';$('btLastError').textContent=''};$('testPrint').onclick=()=>printBluetooth({number:'TEST',timestamp:Date.now(),customerName:'Test',items:[{name:'ACTS Test Print',qty:1,rate:1}],grandTotal:1});$('receiptBluetooth').onclick=()=>{if(printerDevice)printBluetooth(selectedReceiptBill());else{toast('Direct Bluetooth not connected. Opening Android print / Save PDF fallback.');window.print()}};window.addEventListener('error',e=>{console.error(e);toast('App error caught. Reload if needed.')});window.addEventListener('unhandledrejection',e=>{console.error(e.reason);e.preventDefault();toast('Operation failed. Try again.')});
+// Restore a draft safely, then initialize screens.
+if(!shop.address||shop.address==='Virpur, Gujarat')shop.address='Doshihat, Kapad Bazar, Dholka - 382225';if(!shop.mobile)shop.mobile='9687393089';const d=safeGet('anmol_bill_draft',null);if(d&&Array.isArray(d.items)){items=d.items; $('customerName').value=d.customerName||$('customerName').value;$('customerMobile').value=d.customerMobile||$('customerMobile').value;$('discount').value=d.discount??safeGet('anmol_discount','0');paymentMode=d.paymentMode||'Cash';$('paidCheck').checked=d.paid!==false} else $('discount').value=safeGet('anmol_discount','0');loadShop();renderItems();renderBills();renderProfit();renderCustomers();renderExport();renderReceipt();
+})();
+</script></body></html>
